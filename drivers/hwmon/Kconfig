@@ -503,6 +503,15 @@ config SENSORS_CHIPCAP2
 	  To compile this driver as a module, choose M here: the module
 	  will be called chipcap2.
 
+config SENSORS_COREPVT_ULTRARISC
+	tristate "UltraRISC Core Voltage, Temperature sensor driver"
+	help
+	  If you say yes here you get support for UltraRISC Core PVT sensor
+	  embedded into the SoC.
+
+	  This driver can also be built as a module. If so, the module will be
+	  called corepvt-ultrarisc.
+
 config SENSORS_CORSAIR_CPRO
 	tristate "Corsair Commander Pro controller"
 	depends on HID
