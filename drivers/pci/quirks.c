@@ -6378,3 +6378,26 @@ static void quirk_sg2042_no_port_services(struct pci_dev *dev)
 	dev->dev_flags |= PCI_DEV_FLAGS_NO_PORT_SERVICES;
 }
 DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_SOPHGO, 0x2042, quirk_sg2042_no_port_services);
+
+/*
+ * PCI switches integrated into Intel Arc GPUs have BAR0 that prevents
+ * resizing the BARs of the GPU device due to that bridge BAR0 pinning the
+ * bridge window it's under in place. Nothing in pcieport requires that
+ * BAR0.
+ *
+ * Release and disable BAR0 permanently by clearing its flags to prevent
+ * anything from assigning it again.
+ */
+static void pci_release_bar0(struct pci_dev *pdev)
+{
+	struct resource *res = pci_resource_n(pdev, 0);
+
+	if (!res->parent)
+		return;
+
+	pci_release_resource(pdev, 0);
+	res->flags = 0;
+}
+DECLARE_PCI_FIXUP_ENABLE(PCI_VENDOR_ID_INTEL, 0x4fa0, pci_release_bar0);
+DECLARE_PCI_FIXUP_ENABLE(PCI_VENDOR_ID_INTEL, 0x4fa1, pci_release_bar0);
+DECLARE_PCI_FIXUP_ENABLE(PCI_VENDOR_ID_INTEL, 0xe2ff, pci_release_bar0);
