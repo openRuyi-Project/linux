@@ -450,8 +450,9 @@ static int spacemit_i2s_probe(struct platform_device *pdev)
 		return dev_err_probe(i2s->dev, PTR_ERR(clk), "failed to enable sspa_bus clock\n");
 
 	i2s->sspa_clk = devm_clk_get_enabled(i2s->dev, "sspa");
-	if (IS_ERR(clk))
-		return dev_err_probe(i2s->dev, PTR_ERR(clk), "failed to enable sspa clock\n");
+	if (IS_ERR(i2s->sspa_clk))
+		return dev_err_probe(i2s->dev, PTR_ERR(i2s->sspa_clk),
+				     "failed to enable sspa clock\n");
 
 	i2s->sysclk_div = devm_clk_get_optional_enabled(i2s->dev, "sysclk_div");
 	if (IS_ERR(i2s->sysclk_div))
