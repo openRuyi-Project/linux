@@ -146,26 +146,26 @@ static int migrate_vma_collect_huge_pmd(pmd_t *pmdp, unsigned long start,
 	unsigned long write = 0;
 
 	ptl = pmd_lock(mm, pmdp);
-	if (pmd_none(*pmdp)) {
+	if (pmd_none(pmdp_get(pmdp))) {
 		spin_unlock(ptl);
 		return migrate_vma_collect_hole(start, end, -1, walk);
 	}
 
-	if (pmd_trans_huge(*pmdp)) {
+	if (pmd_trans_huge(pmdp_get(pmdp))) {
 		if (!(migrate->flags & MIGRATE_VMA_SELECT_SYSTEM)) {
 			spin_unlock(ptl);
 			return migrate_vma_collect_skip(start, end, walk);
 		}
 
-		folio = pmd_folio(*pmdp);
+		folio = pmd_folio(pmdp_get(pmdp));
 		if (is_huge_zero_folio(folio)) {
 			spin_unlock(ptl);
 			return migrate_vma_collect_hole(start, end, -1, walk);
 		}
-		if (pmd_write(*pmdp))
+		if (pmd_write(pmdp_get(pmdp)))
 			write = MIGRATE_PFN_WRITE;
-	} else if (!pmd_present(*pmdp)) {
-		const softleaf_t entry = softleaf_from_pmd(*pmdp);
+	} else if (!pmd_present(pmdp_get(pmdp))) {
+		const softleaf_t entry = softleaf_from_pmd(pmdp_get(pmdp));
 
 		if (!softleaf_is_device_private(entry) ||
 		    !(migrate->flags & MIGRATE_VMA_SELECT_DEVICE_PRIVATE)) {
@@ -257,7 +257,7 @@ static int migrate_vma_collect_pmd(pmd_t *pmdp,
 	pte_t *ptep;
 
 again:
-	if (pmd_trans_huge(*pmdp) || !pmd_present(*pmdp)) {
+	if (pmd_trans_huge(pmdp_get(pmdp)) || !pmd_present(pmdp_get(pmdp))) {
 		int ret = migrate_vma_collect_huge_pmd(pmdp, start, end, walk, fault_folio);
 
 		if (ret == -EAGAIN)
@@ -869,9 +869,9 @@ static int migrate_vma_insert_huge_pmd_page(struct migrate_vma *migrate,
 	if (userfaultfd_missing(vma))
 		goto unlock_abort;
 
-	if (is_huge_zero_pmd(*pmdp))
+	if (is_huge_zero_pmd(pmdp_get(pmdp)))
 		flush = true;
-	else if (!pmd_none(*pmdp))
+	else if (!pmd_none(pmdp_get(pmdp)))
 		goto unlock_abort;
 
 	add_mm_counter(vma->vm_mm, MM_ANONPAGES, HPAGE_PMD_NR);
@@ -1015,12 +1015,12 @@ static void migrate_vma_insert_page(struct migrate_vma *migrate,
 		return;
 	}
 
-	if (!pmd_none(*pmdp)) {
-		if (pmd_trans_huge(*pmdp)) {
-			if (!is_huge_zero_pmd(*pmdp))
+	if (!pmd_none(pmdp_get(pmdp))) {
+		if (pmd_trans_huge(pmdp_get(pmdp))) {
+			if (!is_huge_zero_pmd(pmdp_get(pmdp)))
 				goto abort;
 			split_huge_pmd(vma, pmdp, addr);
-		} else if (pmd_leaf(*pmdp))
+		} else if (pmd_leaf(pmdp_get(pmdp)))
 			goto abort;
 	}
 
