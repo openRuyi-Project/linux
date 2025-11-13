@@ -316,6 +316,12 @@ properties:
             memory types as ratified in the RISC-V Instruction Set Manual,
             Volume II Privileged Architecture, Document Version 20211203.
 
+        - const: svrsw60t59b
+          description:
+            The Svrsw60t59b extension for providing two more bits[60:59] to
+            PTE/PMD entry as ratified at commit 28bde925e7a7 ("PTE Reserved
+            for SW bits 60:59") of riscv-non-isa/riscv-iommu.
+
         - const: svvptc
           description:
             The standard Svvptc supervisor-level extension for
