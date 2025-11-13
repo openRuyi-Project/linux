@@ -529,9 +529,9 @@ static bool damon_va_young_addr(struct folio *folio, pte_t *pte, pmd_t *pmd,
 	bool young = false;
 
 	if (pte)
-		young = pte_young(*pte);
+		young = pte_young(ptep_get(pte));
 	else if (pmd)
-		young = pmd_young(*pmd);
+		young = pmd_young(pmdp_get(pmd));
 	young = young || !folio_test_idle(folio) ||
 		mmu_notifier_test_young(mm, addr);
 	return young;
