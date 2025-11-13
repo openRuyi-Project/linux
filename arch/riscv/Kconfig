@@ -943,6 +943,22 @@ config TOOLCHAIN_MATCHES_ZICSR_ZIFENCEI
 	  Zicsr/Zifencei to enable these two extensions, Clang just accepts them in
 	  -march and then silently ignores them.
 
+config RISCV_ISA_XLINUXMEMALIAS
+	bool "Use physical memory aliases to emulate page-based memory types"
+	depends on 64BIT && MMU
+	default y
+	select DMA_DIRECT_REMAP
+	help
+	  Add support for the kernel to alter the Physical Memory Attributes
+	  (PMAs) of a page at runtime by selecting from among the aliases of
+	  that page in the physical address space.
+
+	  On systems where physical memory aliases are present, this option
+	  is required in order to mark pages as non-cacheable for use with
+	  non-coherent DMA devices.
+
+	  If you don't know what to do here, say Y.
+
 config FPU
 	bool "FPU support"
 	default y
