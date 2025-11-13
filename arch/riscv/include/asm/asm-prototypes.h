@@ -13,6 +13,12 @@ long long __lshrti3(long long a, int b);
 long long __ashrti3(long long a, int b);
 long long __ashlti3(long long a, int b);
 
+#ifdef CONFIG_RISCV_ISA_XLINUXMEMALIAS
+/* Non-standard calling convention, only called from ALT_FIXUP_MT/ALT_UNFIX_MT */
+void riscv_fixup_memory_alias(void);
+void riscv_unfix_memory_alias(void);
+#endif
+
 #ifdef CONFIG_RISCV_ISA_V
 
 #ifdef CONFIG_MMU
