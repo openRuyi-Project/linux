@@ -652,11 +652,11 @@ static void queue_folios_pmd(pmd_t *pmd, unsigned long addr,
 	struct folio *folio;
 	struct queue_pages *qp = walk->private;
 
-	if (unlikely(pmd_is_migration_entry(*pmd))) {
+	if (unlikely(pmd_is_migration_entry(pmdp_get(pmd)))) {
 		qp->nr_failed++;
 		return;
 	}
-	folio = vm_normal_folio_pmd(walk->vma, addr, *pmd);
+	folio = vm_normal_folio_pmd(walk->vma, addr, pmdp_get(pmd));
 	if (!folio || folio_is_zone_device(folio))
 		return;
 	if (!queue_folio_required(folio, qp))
