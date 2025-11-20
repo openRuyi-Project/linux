@@ -185,6 +185,14 @@
 	vrgmii-supply = <&vcc_1v8>;
 };
 
+&sata {
+	status = "okay";
+};
+
+&sata_phy {
+	status = "okay";
+};
+
 &sdhci_emmc {
 	status = "okay";
 };
