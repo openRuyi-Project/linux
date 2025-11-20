@@ -372,6 +372,59 @@
 			resets = <&reset EIC7700_RESET_WDT3>;
 		};
 
+
+		sdhci_emmc: mmc@50450000 {
+			compatible = "eswin,eic7700-dwcmshc";
+			reg = <0x0 0x50450000 0x0 0x10000>;
+			clocks = <&clk EIC7700_CLK_GATE_HSP_MSHC0_CORE_CLK>,
+				   <&clk EIC7700_CLK_GATE_HSP_CFG_CLK>,
+				   <&clk EIC7700_CLK_GATE_HSP_ACLK>;
+			clock-names = "core", "bus", "axi";
+			assigned-clocks = <&clk EIC7700_CLK_GATE_HSP_MSHC0_CORE_CLK>;
+			assigned-clock-rates = <200000000>;
+			interrupt-parent = <&plic>;
+			interrupts = <79>;
+			resets = <&reset EIC7700_RESET_HSP_EMMC_ARST>,
+				 <&reset EIC7700_RESET_MSHC0_PHY>,
+				 <&reset EIC7700_RESET_HSP_EMMC_PRST>,
+				 <&reset EIC7700_RESET_MSHC0_TXRX>;
+			reset-names = "axi", "phy", "prstn", "txrx";
+			bus-width = <8>;
+			non-removable;
+			mmc-hs400-1_8v;
+			no-sdio;
+			no-sd;
+			max-frequency = <200000000>;
+			eswin,hsp-sp-csr = <&syscon 0x508 0x50c>;
+			eswin,drive-impedance-ohms = <50>;
+			status = "disabled";
+		};
+
+		sdio0: mmc@50460000 {
+			compatible = "eswin,eic7700-dwcmshc";
+			reg = <0x0 0x50460000 0x0 0x10000>;
+			interrupt-parent = <&plic>;
+			interrupts = <81>;
+			clocks = <&clk EIC7700_CLK_GATE_HSP_MSHC1_CORE_CLK>,
+				   <&clk EIC7700_CLK_GATE_HSP_CFG_CLK>,
+				   <&clk EIC7700_CLK_GATE_HSP_ACLK>;
+			clock-names ="core","bus","axi";
+			resets = <&reset EIC7700_RESET_HSP_SD0_ARST>,
+				 <&reset EIC7700_RESET_MSHC1_PHY>,
+				 <&reset EIC7700_RESET_HSP_SD0_PRST>,
+				 <&reset EIC7700_RESET_MSHC1_TXRX>;
+			reset-names = "axi", "phy", "prstn", "txrx";
+			max-frequency = <208000000>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			bus-width = <4>;
+			no-sdio;
+			no-mmc;
+			eswin,hsp-sp-csr = <&syscon 0x608 0x60c>;
+			eswin,drive-impedance-ohms = <33>;
+			status = "disabled";
+		};
+
 		uart0: serial@50900000 {
 			compatible = "snps,dw-apb-uart";
 			reg = <0x0 0x50900000 0x0 0x10000>;
