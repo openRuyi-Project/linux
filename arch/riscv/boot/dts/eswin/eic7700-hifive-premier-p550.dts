@@ -16,6 +16,8 @@
 	aliases {
 		ethernet0 = &gmac0;
 		ethernet1 = &gmac1;
+		mmc0 = &sdhci_emmc;
+		mmc1 = &sdio0;
 		serial0 = &uart0;
 	};
 
@@ -165,6 +167,14 @@
 
 &pinctrl {
 	vrgmii-supply = <&vcc_1v8>;
+};
+
+&sdhci_emmc {
+	status = "okay";
+};
+
+&sdio0 {
+	status = "okay";
 };
 
 &uart0 {
