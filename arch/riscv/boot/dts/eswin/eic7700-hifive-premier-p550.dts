@@ -188,3 +188,7 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&uart2_pins>;
 };
+
+&pcie {
+	status = "okay";
+};
