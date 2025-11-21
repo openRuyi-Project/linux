@@ -460,6 +460,56 @@
 			status = "disabled";
 		};
 
+		usb0: usb@50480000 {
+			compatible = "eswin,eic7700-dwc3";
+			reg = <0x0 0x50480000 0x0 0x10000>;
+			clocks = <&clk EIC7700_CLK_GATE_HSP_ACLK>,
+				 <&clk EIC7700_CLK_GATE_HSP_CFG_CLK>,
+				 <&hspcrg 15>;
+			clock-names = "aclk", "cfg", "usb_en";
+			interrupt-parent = <&plic>;
+			interrupts = <85>;
+			interrupt-names = "peripheral";
+			resets = <&reset EIC7700_RESET_USB0_VAUX>, <&hspcrg 2>, <&hspcrg 4>;
+			reset-names = "vaux", "usb_rst", "usb_phy";
+			dr_mode = "host";
+			phy_type = "utmi";
+			wakeup-source;
+			snps,dis_enblslpm_quirk;
+			snps,dis-u2-freeclk-exists-quirk;
+			snps,dis_u2_susphy_quirk;
+			snps,dis-del-phy-power-chg-quirk;
+			snps,parkmode-disable-ss-quirk;
+			maximum-speed = "high-speed";
+			eswin,hsp-sp-csr = <&syscon 0x800 0x808>;
+			status = "disabled";
+		};
+
+		usb1: usb@50490000 {
+			compatible = "eswin,eic7700-dwc3";
+			reg = <0x0 0x50490000 0x0 0x10000>;
+			clocks = <&clk EIC7700_CLK_GATE_HSP_ACLK>,
+				 <&clk EIC7700_CLK_GATE_HSP_CFG_CLK>,
+				 <&hspcrg 16>;
+			clock-names = "aclk", "cfg", "usb_en";
+			interrupt-parent = <&plic>;
+			interrupts = <86>;
+			interrupt-names = "peripheral";
+			resets = <&reset EIC7700_RESET_USB1_VAUX>, <&hspcrg 3>, <&hspcrg 5>;
+			reset-names = "vaux", "usb_rst", "usb_phy";
+			dr_mode = "host";
+			phy_type = "utmi";
+			snps,dis_enblslpm_quirk;
+			snps,dis-u2-freeclk-exists-quirk;
+			snps,dis_u2_susphy_quirk;
+			snps,dis-del-phy-power-chg-quirk;
+			snps,parkmode-disable-ss-quirk;
+			maximum-speed = "high-speed";
+			wakeup-source;
+			eswin,hsp-sp-csr = <&syscon 0x900 0x908>;
+			status = "disabled";
+		};
+
 		uart0: serial@50900000 {
 			compatible = "snps,dw-apb-uart";
 			reg = <0x0 0x50900000 0x0 0x10000>;
