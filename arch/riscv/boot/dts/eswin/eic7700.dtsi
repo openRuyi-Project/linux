@@ -372,6 +372,16 @@
 			resets = <&reset EIC7700_RESET_WDT3>;
 		};
 
+		hspcrg: clock-controller@50440000 {
+			compatible = "eswin,eic7700-hspcrg";
+			reg = <0x0 0x50440000 0x0 0x2000>;
+			clocks = <&clk EIC7700_CLK_GATE_HSP_CFG_CLK>,
+				   <&clk EIC7700_CLK_FIXED_FACTOR_CLK_1M_DIV24>,
+				   <&clk EIC7700_CLK_GATE_HSP_SATA_OOB_CLK>;
+			clock-names = "cfg", "mmc", "sata";
+			#clock-cells = <1>;
+			#reset-cells = <1>;
+		};
 
 		sdhci_emmc: mmc@50450000 {
 			compatible = "eswin,eic7700-dwcmshc";
