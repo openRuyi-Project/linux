@@ -100,7 +100,7 @@ int stmmac_reset(struct stmmac_priv *priv, void __iomem *ioaddr)
 		return -EINVAL;
 
 	if (plat && plat->fix_soc_reset)
-		return plat->fix_soc_reset(priv, ioaddr);
+		return plat->fix_soc_reset(priv);
 
 	return stmmac_do_callback(priv, dma, reset, ioaddr);
 }
