@@ -55,6 +55,8 @@ enum sbi_ext_base_fid {
 	SBI_EXT_BASE_GET_MVENDORID,
 	SBI_EXT_BASE_GET_MARCHID,
 	SBI_EXT_BASE_GET_MIMPID,
+	SBI_EXT_BASE_GET_MHARTID,
+	SBI_EXT_BASE_FLUSH_L2CACHE,
 };
 
 enum sbi_ext_time_fid {
@@ -664,6 +666,8 @@ unsigned long riscv_get_marchid(void);
 unsigned long riscv_cached_mvendorid(unsigned int cpu_id);
 unsigned long riscv_cached_marchid(unsigned int cpu_id);
 unsigned long riscv_cached_mimpid(unsigned int cpu_id);
+long sbi_get_mhartid(void);
+long sbi_flush_l2cache(void);
 
 #if IS_ENABLED(CONFIG_SMP) && IS_ENABLED(CONFIG_RISCV_SBI)
 DECLARE_STATIC_KEY_FALSE(riscv_sbi_for_rfence);

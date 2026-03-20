@@ -646,6 +646,18 @@ int sbi_debug_console_read(char *bytes, unsigned int num_bytes)
 	return ret.error ? sbi_err_map_linux_errno(ret.error) : ret.value;
 }
 
+long sbi_get_mhartid(void)
+{
+	return __sbi_base_ecall(SBI_EXT_BASE_GET_MHARTID);
+}
+EXPORT_SYMBOL(sbi_get_mhartid);
+
+long sbi_flush_l2cache(void)
+{
+	return __sbi_base_ecall(SBI_EXT_BASE_FLUSH_L2CACHE);
+}
+EXPORT_SYMBOL(sbi_flush_l2cache);
+
 void __init sbi_init(void)
 {
 	bool srst_power_off = false;
