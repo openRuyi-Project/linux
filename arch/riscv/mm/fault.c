@@ -20,6 +20,9 @@
 #include <asm/ptrace.h>
 #include <asm/tlbflush.h>
 
+#include <asm/sbi.h>
+#include <asm/bosc_mm_fault_workaround.h>
+
 #define CREATE_TRACE_POINTS
 #include <trace/events/exceptions.h>
 
@@ -81,9 +84,14 @@ static void die_kernel_fault(const char *msg, unsigned long addr,
 {
 	bust_spinlocks(1);
 
+	printk("BOSC DEBUG: mhartid:%d\n", sbi_get_mhartid());
 	pr_alert("Unable to handle kernel %s at virtual address " REG_FMT "\n", msg,
 		addr);
 
+	if (bosc_kernel_fault_workaround(regs))
+		return;
+
+	printk("!!! BOSC DEBUG: bosc mm_fault workaround failed\n");
 	bust_spinlocks(0);
 	show_pte(addr);
 	die(regs, "Oops");

@@ -34,6 +34,9 @@
 #include <asm/vector.h>
 #include <asm/irq_stack.h>
 
+#include <asm/sbi.h>
+#include <asm/bosc_mm_fault_workaround.h>
+
 int show_unhandled_signals = 1;
 
 static DEFINE_RAW_SPINLOCK(die_lock);
@@ -116,6 +119,9 @@ void do_trap(struct pt_regs *regs, int signo, int code, unsigned long addr)
 {
 	struct task_struct *tsk = current;
 
+	printk("BOSC DEBUG: mhartid:%d\n", sbi_get_mhartid());
+	if (bosc_segment_fault_workaround(regs))
+		return;
 	if (show_unhandled_signals && unhandled_signal(tsk, signo)
 	    && printk_ratelimit()) {
 		pr_info("%s[%d]: unhandled signal %d code 0x%x at 0x" REG_FMT,
@@ -126,6 +132,7 @@ void do_trap(struct pt_regs *regs, int signo, int code, unsigned long addr)
 		dump_instr(KERN_INFO, regs);
 	}
 
+	printk("!!! BOSC DEBUG: bosc mm_fault workaround failed\n");
 	force_sig_fault(signo, code, (void __user *)addr);
 }
 
@@ -137,8 +144,12 @@ static void do_trap_error(struct pt_regs *regs, int signo, int code,
 	if (user_mode(regs)) {
 		do_trap(regs, signo, code, addr);
 	} else {
-		if (!fixup_exception(regs))
+		if (!fixup_exception(regs)) {
+			if (bosc_kernel_fault_workaround(regs))
+				return;
+			printk("!!! BOSC DEBUG: bosc mm_fault workaround failed\n");
 			die(regs, str);
+		}
 	}
 }
 
@@ -150,6 +161,7 @@ static void do_trap_error(struct pt_regs *regs, int signo, int code,
 #define DO_ERROR_INFO(name, signo, code, str)					\
 asmlinkage __visible __trap_section void name(struct pt_regs *regs)		\
 {										\
+	printk("BOSC DEBUG: mhartid:%d\n", sbi_get_mhartid());			\
 	if (user_mode(regs)) {							\
 		irqentry_enter_from_user_mode(regs);				\
 		local_irq_enable();						\

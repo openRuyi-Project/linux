@@ -32,6 +32,8 @@
 
 #include <asm/irq_regs.h>
 
+#include <asm/sbi.h>
+
 static DEFINE_MUTEX(watchdog_mutex);
 
 #if defined(CONFIG_HARDLOCKUP_DETECTOR) || defined(CONFIG_HARDLOCKUP_DETECTOR_SPARC64)
@@ -831,6 +833,7 @@ static enum hrtimer_restart watchdog_timer_fn(struct hrtimer *hrtimer)
 			smp_processor_id(), duration,
 			current->comm, task_pid_nr(current));
 		report_cpu_status();
+		printk("BOSC DEBUG: mhartid:%d\n", sbi_get_mhartid());
 		print_modules();
 		print_irqtrace_events(current);
 		if (regs)
