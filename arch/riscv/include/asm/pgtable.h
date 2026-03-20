@@ -550,6 +550,7 @@ static inline int pte_same(pte_t pte_a, pte_t pte_b)
 static inline void set_pte(pte_t *ptep, pte_t pteval)
 {
 	WRITE_ONCE(*ptep, pteval);
+	__asm__ __volatile__ ("sfence.vma" : : : "memory");
 }
 
 void flush_icache_pte(struct mm_struct *mm, pte_t pte);
