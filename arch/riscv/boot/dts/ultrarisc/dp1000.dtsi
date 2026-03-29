@@ -436,7 +436,7 @@
 		};
 
 		pcie_x16: pcie@21000000 {
-			compatible = "ultrarisc,dw-pcie";
+			compatible = "ultrarisc,dp1000-pcie";
 			#address-cells = <3>;
 			#size-cells = <2>;
 			#interrupt-cells = <1>;
@@ -462,7 +462,7 @@
 		};
 
 		pcie_x4a: pcie@23000000 {
-			compatible = "ultrarisc,dw-pcie";
+			compatible = "ultrarisc,dp1000-pcie";
 			#address-cells = <3>;
 			#size-cells = <2>;
 			#interrupt-cells = <1>;
@@ -488,7 +488,7 @@
 		};
 
 		pcie_x4b: pcie@24000000 {
-			compatible = "ultrarisc,dw-pcie";
+			compatible = "ultrarisc,dp1000-pcie";
 			#address-cells = <3>;
 			#size-cells = <2>;
 			#interrupt-cells = <1>;
