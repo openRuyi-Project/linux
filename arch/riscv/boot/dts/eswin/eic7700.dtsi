@@ -5,6 +5,7 @@
 
 /dts-v1/;
 #include <dt-bindings/clock/eswin,eic7700-clock.h>
+#include <dt-bindings/clock/eswin,eic7700-clock.h>
 #include <dt-bindings/reset/eswin,eic7700-reset.h>
 
 #include <dt-bindings/riscv/physical-memory.h>
@@ -755,6 +756,32 @@
 				ngpios = <16>;
 				#gpio-cells = <2>;
 			};
+		};
+
+		pvt0: pvt@50b00000 {
+			compatible = "eswin,eic7700-pvt";
+			reg = <0x0 0x50b00000 0x0 0x10000>;
+			#thermal-sensor-cells = <0>;
+			clocks = <&clk EIC7700_CLK_GATE_LSP_PVT0_CLK>,
+				 <&clk EIC7700_CLK_GATE_LSP_PVT_PCLK>;
+			clock-names = "enable", "apb";
+			interrupts = <349>;
+			interrupt-parent = <&plic>;
+			label = "pvt0";
+			resets = <&reset EIC7700_RESET_PVT0>;
+		};
+
+		pvt1: pvt@52360000 {
+			compatible = "eswin,eic7700-pvt";
+			reg = <0x0 0x52360000 0x0 0x20000>;
+			#thermal-sensor-cells = <0>;
+			clocks = <&clk EIC7700_CLK_GATE_LSP_PVT1_CLK>,
+				 <&clk EIC7700_CLK_GATE_DDRT_CFG_CLK>;
+			clock-names = "enable", "apb";
+			interrupts = <350>;
+			interrupt-parent = <&plic>;
+			label = "pvt1";
+			resets = <&reset EIC7700_RESET_PVT1>;
 		};
 
 		pinctrl: pinctrl@51600080 {
