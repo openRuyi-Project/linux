@@ -25,6 +25,13 @@
 		stdout-path = "serial0:115200n8";
 	};
 
+	fan: pwm-fan {
+		compatible = "pwm-fan";
+		pwms = <&pwm0 0 100000 0>;
+		cooling-levels = <64 128 192 255>;
+		#cooling-cells = <2>;
+	};
+
 	leds {
 		compatible = "gpio-leds";
 		pinctrl-names = "default";
@@ -213,4 +220,11 @@
 	status = "okay";
 	pinctrl-names = "default";
 	pinctrl-0 = <&fan_pwm_pins>;
+};
+
+&fan_control {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&fan_tach_pins>;
+	pulses-per-revolution = <2>;
 };
