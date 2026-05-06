@@ -825,6 +825,15 @@
 			status = "disabled";
 		};
 
+		fan_control: fan-controller@50b50000 {
+			compatible = "eswin,eic7700-fan-control";
+			reg = <0x0 0x50b50000 0x0 0x10000>;
+			clocks = <&clk EIC7700_CLK_GATE_LSP_FAN_PCLK>;
+			resets = <&reset EIC7700_RESET_FAN>;
+			interrupts = <354>;
+			status = "disabled";
+		};
+
 		pinctrl: pinctrl@51600080 {
 			compatible = "eswin,eic7700-pinctrl";
 			reg = <0x0 0x51600080 0x0 0x1fff80>;
