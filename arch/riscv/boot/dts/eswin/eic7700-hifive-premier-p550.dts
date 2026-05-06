@@ -230,3 +230,10 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&fan_pwm_pins>;
 };
+
+&fan_control {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&fan_tach_pins>;
+	cooling-levels = <64 128 192 255>;
+};
