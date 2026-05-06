@@ -237,3 +237,42 @@
 	pinctrl-0 = <&fan_tach_pins>;
 	cooling-levels = <64 128 192 255>;
 };
+
+&cpu_thermal {
+	trips {
+		fan_trip0: fan-trip0 {
+			temperature = <45000>;
+			hysteresis = <2000>;
+			type = "active";
+		};
+
+		fan_trip1: fan-trip1 {
+			temperature = <55000>;
+			hysteresis = <2000>;
+			type = "active";
+		};
+
+		fan_trip2: fan-trip2 {
+			temperature = <65000>;
+			hysteresis = <2000>;
+			type = "active";
+		};
+	};
+
+	cooling-maps {
+		map-fan0 {
+			trip = <&fan_trip0>;
+			cooling-device = <&fan_control 1 1>;
+		};
+
+		map-fan1 {
+			trip = <&fan_trip1>;
+			cooling-device = <&fan_control 2 2>;
+		};
+
+		map-fan2 {
+			trip = <&fan_trip2>;
+			cooling-device = <&fan_control 3 3>;
+		};
+	};
+};
