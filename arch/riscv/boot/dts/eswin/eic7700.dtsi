@@ -814,6 +814,17 @@
 			resets = <&reset EIC7700_RESET_PVT1>;
 		};
 
+		pwm0: pwm@50818000 {
+			compatible = "eswin,eic7700-pwm";
+			#pwm-cells = <3>;
+			reg = <0x0 0x50818000 0x0 0x4000>;
+			clocks = <&clk EIC7700_CLK_GATE_LSP_TIMER_PCLK>,
+				  <&clk EIC7700_CLK_GATE_LSP_TIMER_PCLK>;
+			clock-names = "bus", "timer";
+			resets = <&reset EIC7700_RESET_TIMER>;
+			status = "disabled";
+		};
+
 		pinctrl: pinctrl@51600080 {
 			compatible = "eswin,eic7700-pinctrl";
 			reg = <0x0 0x51600080 0x0 0x1fff80>;
