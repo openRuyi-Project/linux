@@ -90,6 +90,8 @@ asm volatile(ALTERNATIVE(									\
 	__asm__ __volatile__ ("wfi")
 #endif
 
+extern bool sifive_h_0_6_1;
+
 #define ALT_CMO_OP(_op, _start, _size, _cachesize)			\
 asm volatile(ALTERNATIVE(						\
 	__nops(5),							\
