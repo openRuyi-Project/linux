@@ -76,6 +76,20 @@ config ERRATA_SIFIVE_CIP_1200
 
 	  If you don't know what to do here, say "Y".
 
+config ERRATA_SIFIVE_H_0_6_1
+	bool "SiFive H-extension 0.6.1 missing CSR workaround"
+	depends on ERRATA_SIFIVE && KVM
+	default y
+	help
+	  SiFive cores implementing H-extension draft version 0.6.1
+	  (e.g. P550 with arch_id 0x8000000000000008, impid 0x6220425)
+	  do not implement the HENVCFG/HENVCFGH CSRs that were
+	  added in later H-extension versions. Accessing them
+	  triggers an illegal instruction exception.
+
+	  Enable this to skip HENVCFG/HENVCFGH CSR accesses on
+	  affected cores.
+
 config ERRATA_STARFIVE_JH7100
 	bool "StarFive JH7100 support for old devicetrees"
 	depends on ARCH_STARFIVE
