@@ -13,6 +13,12 @@
 #include <asm/vendorid_list.h>
 #include <asm/errata_list.h>
 #include <asm/vendor_extensions.h>
+#include <linux/export.h>
+
+#ifdef CONFIG_ERRATA_SIFIVE_H_0_6_1
+bool sifive_h_0_6_1;
+EXPORT_SYMBOL(sifive_h_0_6_1);
+#endif
 
 struct errata_info_t {
 	char name[32];
@@ -67,6 +73,18 @@ static bool errata_mal_9092_check_func(unsigned long  arch_id, unsigned long imp
 	return true;
 }
 
+static bool errata_h_0_6_1_check_func(unsigned long arch_id, unsigned long impid)
+{
+	/*
+	 * Affected cores:
+	 * Architecture ID: 0x8000000000000008
+	 * Implement ID: 0x6220425
+	 */
+	if (arch_id != 0x8000000000000008 || impid != 0x6220425)
+		return false;
+	return true;
+}
+
 static struct errata_info_t errata_list[ERRATA_SIFIVE_NUMBER] = {
 	{
 		.name = "cip-453",
@@ -80,6 +98,10 @@ static struct errata_info_t errata_list[ERRATA_SIFIVE_NUMBER] = {
 		.name = "mal-9092",
 		.check_func = errata_mal_9092_check_func
 	},
+	{
+		.name = "h-0-6-1",
+		.check_func = errata_h_0_6_1_check_func
+	},
 };
 
 static u32 __init_or_module sifive_errata_probe(unsigned long archid,
@@ -91,6 +113,13 @@ static u32 __init_or_module sifive_errata_probe(unsigned long archid,
 	for (idx = 0; idx < ERRATA_SIFIVE_NUMBER; idx++)
 		if (errata_list[idx].check_func(archid, impid))
 			cpu_req_errata |= (1U << idx);
+
+#ifdef CONFIG_ERRATA_SIFIVE_H_0_6_1
+	if (cpu_req_errata & BIT(ERRATA_SIFIVE_H_0_6_1))
+		sifive_h_0_6_1 = true;
+#endif
+	/* h-0-6-1 does not use ALTERNATIVE text patching */
+	cpu_req_errata &= ~BIT(ERRATA_SIFIVE_H_0_6_1);
 
 	return cpu_req_errata;
 }
