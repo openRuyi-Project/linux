@@ -53,6 +53,8 @@ asm(ALTERNATIVE(	\
 	: /* no inputs */	\
 	: "memory")
 
+extern bool sifive_h_0_6_1;
+
 #define ALT_CMO_OP(_op, _start, _size, _cachesize)			\
 asm volatile(ALTERNATIVE(						\
 	__nops(5),							\
