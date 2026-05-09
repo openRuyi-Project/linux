@@ -13,6 +13,7 @@
 #include <asm/sbi.h>
 #include <asm/kvm_vcpu_sbi.h>
 #include <asm/kvm_vcpu_sbi_fwft.h>
+#include <asm/errata_list.h>
 
 #define MIS_DELEG (BIT_ULL(EXC_LOAD_MISALIGNED) | BIT_ULL(EXC_STORE_MISALIGNED))
 
@@ -131,6 +132,10 @@ static long kvm_sbi_fwft_get_misaligned_delegation(struct kvm_vcpu *vcpu,
 
 static bool try_to_set_pmm(unsigned long value)
 {
+	if (IS_ENABLED(CONFIG_ERRATA_SIFIVE_H_0_6_1) &&
+	    sifive_h_0_6_1)
+		return false;
+
 	csr_set(CSR_HENVCFG, value);
 	return (csr_read_clear(CSR_HENVCFG, ENVCFG_PMM) & ENVCFG_PMM) == value;
 }
@@ -186,7 +191,9 @@ static long kvm_sbi_fwft_set_pointer_masking_pmlen(struct kvm_vcpu *vcpu,
 	 * update here so that VCPU see's pointer masking mode change
 	 * immediately.
 	 */
-	if (!one_reg_access)
+	if (!one_reg_access &&
+	    (!IS_ENABLED(CONFIG_ERRATA_SIFIVE_H_0_6_1) ||
+	     !sifive_h_0_6_1))
 		csr_write(CSR_HENVCFG, vcpu->arch.cfg.henvcfg);
 
 	return SBI_SUCCESS;
