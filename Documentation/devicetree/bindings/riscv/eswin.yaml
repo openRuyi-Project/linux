@@ -22,6 +22,7 @@ properties:
       - items:
           - enum:
               - milkv,megrez
+              - pine64,starpro64
               - sifive,hifive-premier-p550
           - const: eswin,eic7700
 
