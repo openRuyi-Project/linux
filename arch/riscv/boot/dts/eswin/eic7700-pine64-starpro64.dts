@@ -99,6 +99,12 @@
 	status = "okay";
 };
 
+&pwm0 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&fan_pwm_pins>;
+};
+
 &sdhci_emmc {
 	status = "okay";
 	/*
