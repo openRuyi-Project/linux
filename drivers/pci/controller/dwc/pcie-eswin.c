@@ -42,6 +42,13 @@
 #define PCI_VENDOR_ID_ESWIN		0x1fe1
 #define PCI_DEVICE_ID_ESWIN_EIC7700	0x2030
 
+/* DBI capability registers */
+#define PCIE_DSP_PF0_MSI_CAP		0x50
+#define PCIE_MSI_MULTIPLE_MSG_MASK	GENMASK(19, 17)
+#define PCIE_MSI_MULTIPLE_MSG_32	FIELD_PREP(PCIE_MSI_MULTIPLE_MSG_MASK, 5)
+#define PCIE_NEXT_CAP_PTR		0x70
+#define PCIE_NEXT_CAP_PTR_MASK		GENMASK(15, 8)
+
 #define ESWIN_NUM_RSTS			ARRAY_SIZE(eswin_pcie_rsts)
 
 static const char * const eswin_pcie_rsts[] = {
@@ -242,6 +249,22 @@ static int eswin_pcie_host_init(struct dw_pcie_rp *pp)
 	dw_pcie_dbi_ro_wr_en(pci);
 	dw_pcie_writew_dbi(pci, PCI_VENDOR_ID, PCI_VENDOR_ID_ESWIN);
 	dw_pcie_writew_dbi(pci, PCI_DEVICE_ID, PCI_DEVICE_ID_ESWIN_EIC7700);
+
+	/* Advertise 32 MSI vectors via MSI Multiple Message Capable. */
+	val = dw_pcie_readl_dbi(pci, PCIE_DSP_PF0_MSI_CAP);
+	val &= ~PCIE_MSI_MULTIPLE_MSG_MASK;
+	val |= PCIE_MSI_MULTIPLE_MSG_32;
+	dw_pcie_writel_dbi(pci, PCIE_DSP_PF0_MSI_CAP, val);
+
+	/*
+	 * Hide the MSI-X capability from the configuration space. The EIC7700
+	 * cannot deliver MSI-X interrupts in practice, so the PCI port driver
+	 * must not try to allocate MSI-X vectors during enumeration.
+	 */
+	val = dw_pcie_readl_dbi(pci, PCIE_NEXT_CAP_PTR);
+	val &= ~PCIE_NEXT_CAP_PTR_MASK;
+	dw_pcie_writel_dbi(pci, PCIE_NEXT_CAP_PTR, val);
+
 	dw_pcie_dbi_ro_wr_dis(pci);
 
 	return 0;
