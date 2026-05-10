@@ -7,23 +7,90 @@
 
 #include "eic7700.dtsi"
 #include "eic7700-pinctrl.dtsi"
+#include <dt-bindings/gpio/gpio.h>
 
 / {
 	compatible = "pine64,starpro64", "eswin,eic7700";
 	model = "Pine64 StarPro64";
 
 	aliases {
+		ethernet0 = &gmac0;
+		ethernet1 = &gmac1;
 		serial0 = &uart0;
 	};
 
 	chosen {
 		stdout-path = "serial0:115200n8";
 	};
+
+	vcc_1v8: vcc1v8 {
+		compatible = "regulator-fixed";
+		regulator-name = "vcc1v8";
+		regulator-always-on;
+		regulator-boot-on;
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <1800000>;
+	};
 };
 
 &osc {
 	clock-frequency = <24000000>;
 	clock-output-names = "osc_24m";
+};
+
+&pinctrl {
+	vrgmii-supply = <&vcc_1v8>;
+};
+
+&gpio16_pins {
+	input-disable;
+	bias-disable;
+};
+
+&gpio94_pins {
+	input-disable;
+	bias-disable;
+};
+
+&gmac0 {
+	phy-handle = <&gmac0_phy0>;
+	phy-mode = "rgmii-id";
+	pinctrl-names = "default";
+	pinctrl-0 = <&gpio94_pins>;
+	status = "okay";
+};
+
+&gmac0_mdio {
+	gmac0_phy0: ethernet-phy@0 {
+		reg = <0>;
+		reset-gpios = <&gpioC 30 GPIO_ACTIVE_LOW>;
+		reset-assert-us = <10000>;
+		reset-deassert-us = <80000>;
+	};
+};
+
+&gmac1 {
+	phy-handle = <&gmac1_phy0>;
+	/*
+	 * Include the MAC's fixed 2 ns TX skew in the effective delay.
+	 * The current driver subtracts it before programming the delay taps
+	 * and disables the PHY TX delay through has_internal_tx_delay.
+	 */
+	phy-mode = "rgmii-id";
+	pinctrl-names = "default";
+	pinctrl-0 = <&gpio16_pins>;
+	rx-internal-delay-ps = <700>;
+	tx-internal-delay-ps = <2400>;
+	status = "okay";
+};
+
+&gmac1_mdio {
+	gmac1_phy0: ethernet-phy@0 {
+		reg = <0>;
+		reset-gpios = <&gpioA 16 GPIO_ACTIVE_LOW>;
+		reset-assert-us = <10000>;
+		reset-deassert-us = <80000>;
+	};
 };
 
 &uart0 {
