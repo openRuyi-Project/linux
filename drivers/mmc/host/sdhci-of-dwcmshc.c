@@ -1259,8 +1259,16 @@ static void sdhci_eic7700_reset(struct sdhci_host *host, u8 mask)
 	dwcmshc_reset(host, mask);
 
 	/* after reset all, the phy's config will be clear */
-	if (mask == SDHCI_RESET_ALL)
+	if (mask == SDHCI_RESET_ALL) {
+		u8 ctrl;
+
+		/* Clear CDTEST to allow real card detect via PRESENT_STATE */
+		ctrl = sdhci_readb(host, SDHCI_HOST_CONTROL);
+		ctrl &= ~(SDHCI_CTRL_CDTEST_INS | SDHCI_CTRL_CDTEST_EN);
+		sdhci_writeb(host, ctrl, SDHCI_HOST_CONTROL);
+
 		sdhci_eic7700_config_phy(host);
+	}
 }
 
 static int sdhci_eic7700_reset_init(struct device *dev, struct eic7700_priv *priv)
