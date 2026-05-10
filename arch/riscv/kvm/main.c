@@ -32,8 +32,16 @@ int kvm_arch_enable_virtualization_cpu(void)
 	csr_write(CSR_HEDELEG, KVM_HEDELEG_DEFAULT);
 	csr_write(CSR_HIDELEG, KVM_HIDELEG_DEFAULT);
 
-	/* VS should access only the time counter directly. Everything else should trap */
-	csr_write(CSR_HCOUNTEREN, 0x02);
+	/*
+	 * HACK: Allow VS-mode to access cycle/time/instret directly.
+	 *
+	 * Some guest bootloaders (e.g. GRUB 2.12, FreeBSD loader) use
+	 * rdcycle for timekeeping and do not include the upstream fix
+	 * (c5ae124e11f2) to use rdtime instead. Expose all counters to
+	 * VS-mode so that guest bootloaders can access cycle/time/instret
+	 * without trapping.
+	 */
+	csr_write(CSR_HCOUNTEREN, 0x07);
 
 	csr_write(CSR_HVIP, 0);
 
