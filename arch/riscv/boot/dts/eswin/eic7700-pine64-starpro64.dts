@@ -16,6 +16,8 @@
 	aliases {
 		ethernet0 = &gmac0;
 		ethernet1 = &gmac1;
+		mmc0 = &sdhci_emmc;
+		mmc1 = &sdio0;
 		serial0 = &uart0;
 	};
 
@@ -91,6 +93,23 @@
 		reset-assert-us = <10000>;
 		reset-deassert-us = <80000>;
 	};
+};
+
+&sdhci_emmc {
+	status = "okay";
+	/*
+	 * The eMMC data strobe pin is wired to RST on this board, so HS400
+	 * (which requires a working data strobe) cannot work. Cap the eMMC
+	 * at HS200 1.8V.
+	 */
+	/delete-property/ mmc-hs400-1_8v;
+	mmc-hs200-1_8v;
+};
+
+&sdio0 {
+	status = "okay";
+	broken-cd;
+	disable-wp;
 };
 
 &uart0 {
