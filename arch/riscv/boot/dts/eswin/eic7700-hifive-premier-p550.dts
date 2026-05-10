@@ -145,6 +145,11 @@
 	};
 };
 
+&gpio13_pins {
+	bias-pull-up;
+	input-enable;
+};
+
 &gpio84_pins {
 	bias-disable;
 	input-disable;
@@ -183,6 +188,9 @@
 
 &sdio0 {
 	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&gpio13_pins>;
+	cd-gpios = <&gpioA 13 GPIO_ACTIVE_LOW>;
 };
 
 &uart0 {
