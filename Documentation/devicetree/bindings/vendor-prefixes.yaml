@@ -1357,6 +1357,8 @@ patternProperties:
     description: Rockchip Electronics Co., Ltd.
   "^rocktech,.*":
     description: ROCKTECH DISPLAYS LIMITED
+  "^rongda,.*":
+    description: Shenzhen Rongda Computer Co., Ltd.
   "^rohm,.*":
     description: ROHM Semiconductor Co., Ltd
   "^ronbo,.*":
