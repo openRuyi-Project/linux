@@ -94,18 +94,21 @@ int cpc_read_ffh(int cpu, struct cpc_reg *reg, u64 *val)
 	struct sbi_cppc_data data;
 	int ret;
 
-	if (WARN_ON_ONCE(irqs_disabled()))
-		return -EPERM;
-
 	if (FFH_CPPC_TYPE(reg->address) == FFH_CPPC_SBI) {
 		if (!cppc_ext_present)
 			return -EINVAL;
 
 		data.reg = FFH_CPPC_SBI_REG(reg->address);
 
-		ret = smp_call_function_single(cpu, sbi_cppc_read, &data, 1);
-		if (ret)
-			return ret;
+		if (irqs_disabled()) {
+			if (WARN_ON_ONCE(cpu != smp_processor_id()))
+				return -EPERM;
+			sbi_cppc_read(&data);
+		} else {
+			ret = smp_call_function_single(cpu, sbi_cppc_read, &data, 1);
+			if (ret)
+				return ret;
+		}
 		if (data.ret.error)
 			return sbi_err_map_linux_errno(data.ret.error);
 
@@ -115,9 +118,15 @@ int cpc_read_ffh(int cpu, struct cpc_reg *reg, u64 *val)
 	} else if (FFH_CPPC_TYPE(reg->address) == FFH_CPPC_CSR) {
 		data.reg = FFH_CPPC_CSR_NUM(reg->address);
 
-		ret = smp_call_function_single(cpu, cppc_ffh_csr_read, &data, 1);
-		if (ret)
-			return ret;
+		if (irqs_disabled()) {
+			if (WARN_ON_ONCE(cpu != smp_processor_id()))
+				return -EPERM;
+			cppc_ffh_csr_read(&data);
+		} else {
+			ret = smp_call_function_single(cpu, cppc_ffh_csr_read, &data, 1);
+			if (ret)
+				return ret;
+		}
 		if (data.ret.error)
 			return data.ret.error;
 
