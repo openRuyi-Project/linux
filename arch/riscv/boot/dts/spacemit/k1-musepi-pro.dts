@@ -10,6 +10,7 @@
 #include "k1.dtsi"
 #include "k1-opp.dtsi"
 #include "k1-pinctrl.dtsi"
+#include "k1-opp.dtsi"
 
 / {
 	model = "SpacemiT MusePi Pro";
