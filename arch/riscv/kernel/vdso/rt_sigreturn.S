@@ -6,6 +6,15 @@
 #include <linux/linkage.h>
 #include <asm/unistd.h>
 
+/*
+ * WARNING: Do NOT add a CFI landing pad at the start of this function.
+ * Unwinders such as libgcc identify the sigreturn trampoline by matching the
+ * instruction sequence. Adding a landing pad here would break unwinding from
+ * signal handlers.
+ *
+ * This trampoline is used only for signal return and not via an indirect
+ * call/jump from userspace, so adding CFI landing pad is unnecessary.
+ */
 	.text
 SYM_FUNC_START(__vdso_rt_sigreturn)
 	.cfi_startproc
