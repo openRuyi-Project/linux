@@ -9,7 +9,6 @@ $schema: http://devicetree.org/meta-schemas/core.yaml#
 title: Imagination Technologies PowerVR SGX GPUs
 
 maintainers:
-  - Matt Coster <matt.coster@imgtec.com>
   - Alessio Belle <alessio.belle@imgtec.com>
   - Luigi Santivetti <luigi.santivetti@imgtec.com>
 
