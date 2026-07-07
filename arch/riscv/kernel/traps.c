@@ -300,10 +300,13 @@ void handle_break(struct pt_regs *regs)
 		return;
 #endif
 	else if (report_bug(regs->epc, regs) == BUG_TRAP_TYPE_WARN ||
-		 handle_cfi_failure(regs) == BUG_TRAP_TYPE_WARN)
+		 handle_cfi_failure(regs) == BUG_TRAP_TYPE_WARN) {
 		regs->epc += get_break_insn_length(regs->epc);
-	else
+	} else {
+		/* Avoid a panic, since we're in_nmi(). */
+		nmi_exit();
 		die(regs, "Kernel BUG");
+	}
 }
 
 asmlinkage __visible __trap_section void do_trap_break(struct pt_regs *regs)
