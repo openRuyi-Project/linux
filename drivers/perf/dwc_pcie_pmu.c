@@ -17,6 +17,7 @@
 #include <linux/list.h>
 #include <linux/pcie-dwc.h>
 #include <linux/perf_event.h>
+#include <linux/pm_runtime.h>
 #include <linux/pci.h>
 #include <linux/smp.h>
 #include <linux/sysfs.h>
@@ -474,12 +475,20 @@ static enum hrtimer_restart dwc_pcie_pmu_hrtimer_callback(struct hrtimer *hrtime
 	return HRTIMER_RESTART;
 }
 
+static void dwc_pcie_pmu_event_destroy(struct perf_event *event)
+{
+	struct dwc_pcie_pmu *pcie_pmu = to_dwc_pcie_pmu(event->pmu);
+
+	pm_runtime_put_autosuspend(&pcie_pmu->pdev->dev);
+}
+
 static int dwc_pcie_pmu_event_init(struct perf_event *event)
 {
 	struct dwc_pcie_pmu *pcie_pmu = to_dwc_pcie_pmu(event->pmu);
 	enum dwc_pcie_event_type type = DWC_PCIE_EVENT_TYPE(event);
 	struct perf_event *sibling;
 	u32 lane;
+	int ret;
 
 	if (event->attr.type != event->pmu->type)
 		return -ENOENT;
@@ -509,7 +518,16 @@ static int dwc_pcie_pmu_event_init(struct perf_event *event)
 	if (dwc_pcie_pmu_validate_group(event))
 		return -ENOSPC;
 
+	/*
+	 * Resume the root port for VSEC access. Use RPM_TRANSPARENT as the
+	 * VSEC is accessible if root port's runtime pm is disabled.
+	 */
+	ret = pm_runtime_get_active(&pcie_pmu->pdev->dev, RPM_TRANSPARENT);
+	if (ret < 0)
+		return ret;
+
 	event->cpu = pcie_pmu->on_cpu;
+	event->destroy = dwc_pcie_pmu_event_destroy;
 
 	return 0;
 }
@@ -776,6 +794,7 @@ static int dwc_pcie_pmu_probe(struct faux_device *fdev)
 	if (!name)
 		return -ENOMEM;
 
+	guard(pm_runtime_active_auto)(&pdev->dev);
 	vsec = dwc_pcie_des_cap(pdev);
 	if (!vsec)
 		return -ENODEV;
@@ -909,6 +928,8 @@ static int __init dwc_pcie_pmu_init(void)
 	dwc_pcie_pmu_hp_state = ret;
 
 	for_each_pci_dev(pdev) {
+		guard(pm_runtime_active_auto)(&pdev->dev);
+
 		if (!dwc_pcie_des_cap(pdev))
 			continue;
 
