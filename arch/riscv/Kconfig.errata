@@ -171,4 +171,14 @@ config ERRATA_THEAD_WRITE_ONCE
 	  This will apply the WRITE_ONCE errata to handle the non-standard beh-
 	  avior via appending a fence w.o instruction for WRITE_ONCE().
 
+config ERRATA_PICOHEART
+	bool "Picoheart errata"
+	depends on RISCV_ALTERNATIVE
+	help
+	  All Picoheart errata Kconfig depend on this Kconfig. Disabling
+	  this Kconfig will disable all Picoheart errata. Please say "Y"
+	  here if your platform uses Picoheart CPU cores.
+
+	  Otherwise, please say "N" here to avoid unnecessary overhead.
+
 endmenu # "CPU errata selection"
