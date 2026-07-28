@@ -172,4 +172,12 @@ static inline bool cpu_supports_indirect_br_lp_instr(void)
 		riscv_has_extension_unlikely(RISCV_ISA_EXT_ZICFILP));
 }
 
+DECLARE_STATIC_KEY_FALSE(cpus_support_cmpxchg128);
+
+static inline bool system_has_cmpxchg128(void)
+{
+	return riscv_has_extension_unlikely(RISCV_ISA_EXT_ZACAS) &&
+	       static_branch_likely(&cpus_support_cmpxchg128);
+}
+
 #endif
