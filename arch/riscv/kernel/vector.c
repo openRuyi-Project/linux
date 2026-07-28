@@ -184,8 +184,8 @@ EXPORT_SYMBOL_GPL(riscv_v_vstate_ctrl_user_allowed);
 
 bool riscv_v_first_use_handler(struct pt_regs *regs)
 {
-	u32 __user *epc = (u32 __user *)regs->epc;
-	u32 insn = (u32)regs->badaddr;
+	unsigned long epc = regs->epc;
+	unsigned long insn = regs->badaddr;
 
 	if (!(has_vector() || has_xtheadvector()))
 		return false;
@@ -200,7 +200,7 @@ bool riscv_v_first_use_handler(struct pt_regs *regs)
 
 	/* Get the instruction */
 	if (!insn) {
-		if (__get_user(insn, epc))
+		if (get_insn(regs, epc, &insn))
 			return false;
 	}
 
