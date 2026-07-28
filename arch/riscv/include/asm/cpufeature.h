@@ -152,4 +152,12 @@ static __always_inline bool riscv_cpu_has_extension_unlikely(int cpu, const unsi
 	return __riscv_isa_extension_available(hart_isa[cpu].isa, ext);
 }
 
+DECLARE_STATIC_KEY_FALSE(cpus_support_cmpxchg128);
+
+static inline bool system_has_cmpxchg128(void)
+{
+	return riscv_has_extension_unlikely(RISCV_ISA_EXT_ZACAS) &&
+	       static_branch_likely(&cpus_support_cmpxchg128);
+}
+
 #endif
