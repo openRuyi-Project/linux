@@ -177,6 +177,10 @@ asmlinkage __visible __trap_section void do_trap_insn_illegal(struct pt_regs *re
 		local_irq_enable();
 
 		handled = riscv_v_first_use_handler(regs);
+
+		if (!handled && riscv_has_picoheart_zicbom_errata())
+			handled = riscv_picoheart_illegal_insn_handler(regs);
+
 		if (!handled)
 			do_trap_error(regs, SIGILL, ILL_ILLOPC, regs->epc,
 				      "Oops - illegal instruction");
