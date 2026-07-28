@@ -606,7 +606,9 @@ static inline void riscv_insn_insert_utype_itype_imm(u32 *utype_insn, u32 *itype
 	int __ret;							\
 									\
 	if (user_mode(regs)) {						\
+		csr_set(CSR_STATUS, SR_MXR);				\
 		__ret = get_user(insn, (type __user *) insn_addr);	\
+		csr_clear(CSR_STATUS, SR_MXR);				\
 	} else {							\
 		insn = *(type *)insn_addr;				\
 		__ret = 0;						\

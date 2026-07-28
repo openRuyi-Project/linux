@@ -184,13 +184,13 @@ SYM_CODE_START(handle_exception)
 	save_from_x6_to_x31
 
 	/*
-	 * Disable user-mode memory access as it should only be set in the
-	 * actual user copy routines.
+	 * Disable user-mode memory access and MXR as it should only be set in
+	 * the actual user copy routines.
 	 *
 	 * Disable the FPU/Vector to detect illegal usage of floating point
 	 * or vector in kernel space.
 	 */
-	li t0, SR_SUM | SR_FS_VS
+	li t0, SR_SUM | SR_MXR | SR_FS_VS
 #ifdef CONFIG_64BIT
 	li t1, SR_ELP
 	or t0, t0, t1
@@ -475,15 +475,15 @@ SYM_FUNC_START(__switch_to)
 	REG_S s10, TASK_THREAD_S10_RA(a3)
 	REG_S s11, TASK_THREAD_S11_RA(a3)
 
-	/* save the user space access flag */
+	/* save the user space access and MXR flag */
 	csrr  s0, CSR_STATUS
-	REG_S s0, TASK_THREAD_SUM_RA(a3)
+	REG_S s0, TASK_THREAD_SUM_MXR_RA(a3)
 
 	/* Save the kernel shadow call stack pointer */
 	scs_save_current
 	/* Restore context from next->thread */
-	REG_L s0,  TASK_THREAD_SUM_RA(a4)
-	li    s1,  SR_SUM
+	REG_L s0,  TASK_THREAD_SUM_MXR_RA(a4)
+	li    s1,  SR_SUM | SR_MXR
 	and   s0,  s0, s1
 	csrs  CSR_STATUS, s0
 	REG_L ra,  TASK_THREAD_RA_RA(a4)
