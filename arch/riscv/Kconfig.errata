@@ -181,4 +181,16 @@ config ERRATA_PICOHEART
 
 	  Otherwise, please say "N" here to avoid unnecessary overhead.
 
+config ERRATA_PICOHEART_CBO_CLEAN
+	bool "Apply Picoheart cbo.clean errata"
+	depends on ERRATA_PICOHEART
+	select RISCV_NONSTANDARD_CACHE_OPS
+	default y
+	help
+	   This will apply the cbo.clean errata workaround on the affected
+	   Picoheart SoCs where cbo.clean instructions may fail to write back
+	   the cacheline in few corner cases.
+
+	   If you don't know what to do here, say "Y".
+
 endmenu # "CPU errata selection"
