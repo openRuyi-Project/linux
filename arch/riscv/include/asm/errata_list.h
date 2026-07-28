@@ -117,6 +117,29 @@ asm volatile(ALTERNATIVE(						\
 #define THEAD_C9XX_RV_IRQ_PMU			17
 #define THEAD_C9XX_CSR_SCOUNTEROF		0x5c5
 
-#endif /* __ASSEMBLER__ */
+#ifdef CONFIG_ERRATA_PICOHEART_CBO_CLEAN
+
+#include <linux/jump_label.h>
+
+DECLARE_STATIC_KEY_FALSE(has_picoheart_cbo_clean_errata);
+
+static inline bool riscv_has_picoheart_zicbom_errata(void)
+{
+	return static_branch_unlikely(&has_picoheart_cbo_clean_errata);
+}
+
+bool riscv_picoheart_illegal_insn_handler(struct pt_regs *regs);
+
+#else /* !CONFIG_ERRATA_PICOHEART_CBO_CLEAN */
+
+static inline bool riscv_has_picoheart_zicbom_errata(void) { return false; }
+static inline bool riscv_picoheart_illegal_insn_handler(struct pt_regs *regs)
+{
+	return false;
+}
+
+#endif /* CONFIG_ERRATA_PICOHEART_CBO_CLEAN */
+
+#endif /* __ASSEMBLY__ */
 
 #endif
