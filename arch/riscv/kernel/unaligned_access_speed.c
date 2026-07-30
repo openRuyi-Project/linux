@@ -288,7 +288,7 @@ free:
 }
 
 #else /* CONFIG_RISCV_PROBE_VECTOR_UNALIGNED_ACCESS */
-static void check_unaligned_access_speed(struct work_struct *work __always_unused)
+static void check_vector_unaligned_access(struct work_struct *work __always_unused)
 {
 }
 #endif
