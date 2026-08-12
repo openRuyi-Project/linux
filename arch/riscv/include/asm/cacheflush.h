@@ -9,6 +9,7 @@
 #include <linux/array_size.h>
 #include <linux/mm.h>
 #include <asm/barrier.h>
+#include <asm/kasan.h>
 
 static inline void local_flush_icache_all(void)
 {
@@ -70,7 +71,9 @@ static inline void mark_new_valid_map(void)
 static inline void flush_cache_vmap(unsigned long start, unsigned long end)
 {
 	if (is_vmalloc_or_module_addr((void *)start) ||
-	    (start >= VMEMMAP_START && end <= VMEMMAP_END))
+	    (start >= VMEMMAP_START && end <= VMEMMAP_END) ||
+	    (IS_ENABLED(CONFIG_KASAN_VMALLOC) &&
+	     start >= KASAN_SHADOW_START && end <= KASAN_SHADOW_END))
 		mark_new_valid_map();
 }
 #define flush_cache_vmap_early(start, end)	local_flush_tlb_kernel_range(start, end)
