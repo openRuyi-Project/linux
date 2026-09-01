@@ -272,5 +272,7 @@ struct drm_plane *vs_cursor_plane_init(struct drm_device *drm_dev,
 	drm_plane_helper_add(plane, &vs_cursor_plane_helper_funcs);
 	drm_plane_create_blend_mode_property(plane, BIT(DRM_MODE_BLEND_COVERAGE));
 
+	drm_plane_create_blend_mode_property(plane,
+					     BIT(DRM_MODE_BLEND_COVERAGE));
 	return plane;
 }
