@@ -174,11 +174,37 @@ static void picoheart_errata_probe_cbo_clean(unsigned int stage,
 	static_branch_enable(&has_picoheart_cbo_clean_errata);
 }
 
+static bool picoheart_errata_probe_amocasq(unsigned int stage,
+					   unsigned long archid,
+					   unsigned long impid)
+{
+	if (!IS_ENABLED(CONFIG_ERRATA_PICOHEART_AMOCASQ))
+		return false;
+
+	if (stage == RISCV_ALTERNATIVES_EARLY_BOOT)
+		return false;
+
+	if (!IS_ENABLED(CONFIG_RISCV_ISA_ZACAS) ||
+	    !riscv_isa_extension_available(NULL, ZACAS))
+		return false;
+
+	if (archid != 0x804a555049544552 || impid != 0x100)
+		return false;
+
+	return true;
+}
+
 static u32 picoheart_errata_probe(unsigned int stage, unsigned long archid,
 				  unsigned long impid)
 {
+	u32 cpu_req_errata = 0;
+
 	picoheart_errata_probe_cbo_clean(stage, archid, impid);
-	return 0;
+
+	if (picoheart_errata_probe_amocasq(stage, archid, impid))
+		cpu_req_errata |= BIT(ERRATA_PICOHEART_AMOCASQ);
+
+	return cpu_req_errata;
 }
 
 void picoheart_errata_patch_func(struct alt_entry *begin, struct alt_entry *end,
