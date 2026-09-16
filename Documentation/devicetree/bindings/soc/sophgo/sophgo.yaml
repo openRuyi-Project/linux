@@ -47,8 +47,13 @@ properties:
           - const: sophgo,srd3-10
           - const: sophgo,sg2044
       - items:
+          - const: sophgo,srd3-12-lb
+          - const: sophgo,srd3-12
+          - const: sophgo,sg2044
+      - items:
           - enum:
               - sophgo,srd3-10
+              - sophgo,srd3-12
           - const: sophgo,sg2044
 
 additionalProperties: true
