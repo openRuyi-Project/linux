@@ -1,0 +1,152 @@
+// SPDX-License-Identifier: (GPL-2.0 OR MIT)
+/*
+ * Copyright (C) 2025 Inochi Amaoto <inochiama@gmail.com>
+ */
+
+/dts-v1/;
+
+#include "sg2044.dtsi"
+
+/ {
+	model = "Sophgo SG2044 SRD3-12";
+	compatible = "sophgo,srd3-12", "sophgo,sg2044";
+
+	aliases {
+		serial0 = &uart0;
+		serial1 = &uart1;
+		serial2 = &uart2;
+		serial3 = &uart3;
+	};
+
+	poweroff {
+		compatible = "gpio-poweroff";
+		gpios = <&porta 5 GPIO_ACTIVE_HIGH>;
+		active-delay-ms = <300>;
+		inactive-delay-ms = <300>;
+	};
+
+	restart {
+		compatible = "gpio-restart";
+		gpios = <&porta 8 GPIO_ACTIVE_HIGH>;
+		active-delay = <300>;
+		inactive-delay = <300>;
+	};
+
+	chosen {
+		stdout-path = "serial1:115200n8";
+	};
+};
+
+&osc {
+	clock-frequency = <25000000>;
+};
+
+&emmc {
+	bus-width = <4>;
+	no-sdio;
+	no-sd;
+	non-removable;
+	wp-inverted;
+	status = "okay";
+};
+
+&efuse0 {
+	status = "okay";
+};
+
+/* BMC SSIF transport uses I2C0; this board has no SD3-10 hwmon MCU. */
+&i2c0 {
+	status = "okay";
+};
+
+&msi {
+	status = "okay";
+};
+
+/*
+ * Keep the SRD3-10 domain numbering for the shared root ports:
+ * pcie1=0 (PCIE3), pcie0=1 (PCIE1), pcie3=2 (M.2_1),
+ * pcie2=3 (MCIO1), pcie4=4 (ASM2824 / MCIO2).
+ * The additional x4 port pcie5=5 is PCIE2 (EDK2 segment 5).
+ */
+
+&pcie0 {
+	bus-range = <0x00 0xff>;
+	linux,pci-domain = <1>;
+	status = "okay";
+};
+
+&pcie1 {
+	bus-range = <0x00 0xff>;
+	linux,pci-domain = <0>;
+	status = "okay";
+};
+
+&pcie2 {
+	bus-range = <0x00 0xff>;
+	linux,pci-domain = <3>;
+	status = "okay";
+};
+
+&pcie3 {
+	/* C2C1 Wrapper0 is split into two x4 root ports on SD3-12. */
+	ranges = <0x01000000 0x00 0x00000000 0x78 0x10000000 0x00 0x00100000>,
+		 <0x02000000 0x00 0x20000000 0x00 0x20000000 0x00 0x08000000>,
+		 <0x43000000 0x79 0x00000000 0x79 0x00000000 0x01 0x00000000>;
+	bus-range = <0x00 0xff>;
+	linux,pci-domain = <2>;
+	status = "okay";
+};
+
+&pcie4 {
+	bus-range = <0x00 0xff>;
+	linux,pci-domain = <4>;
+	status = "okay";
+};
+
+&pcie5 {
+	bus-range = <0x00 0xff>;
+	linux,pci-domain = <5>;
+	status = "okay";
+};
+
+&sd {
+	bus-width = <4>;
+	no-sdio;
+	no-mmc;
+	wp-inverted;
+	status = "okay";
+};
+
+&spifmc0 {
+	status = "okay";
+
+	flash@0 {
+		compatible = "jedec,spi-nor";
+		reg = <0>;
+		spi-max-frequency = <12500000>;
+		spi-tx-bus-width = <1>;
+		spi-rx-bus-width = <1>;
+	};
+};
+
+&spifmc1 {
+	status = "okay";
+
+	flash@0 {
+		compatible = "jedec,spi-nor";
+		reg = <0>;
+		spi-max-frequency = <12500000>;
+		spi-tx-bus-width = <1>;
+		spi-rx-bus-width = <1>;
+	};
+};
+
+&uart0 {
+	/* for firmware */
+	status = "reserved";
+};
+
+&uart1 {
+	status = "okay";
+};
