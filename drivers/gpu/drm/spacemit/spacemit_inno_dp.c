@@ -275,7 +275,7 @@ static ssize_t spacemit_dp_aux_transfer(struct drm_dp_aux *aux,
 
 	struct spacemit_dp_dev *dp = container_of(aux, struct spacemit_dp_dev,
 						  aux);
-	u32 cmd, len, val, status;
+	u32 cmd, len, val, status, reply;
 	u32 data[4] = {0};
 	u8 *buf = msg->buffer;
 	bool is_read = (msg->request & DP_AUX_I2C_READ) ||
@@ -360,8 +360,16 @@ retry_eio:
 	regmap_write(dp->regs, DP_GENERAL_INTERRUPT,
 		     DP_AUX_REPLY_EVENT_INT_STA);
 
-	/* Map HW status (the AUX reply command byte) to DRM reply codes */
-	switch (status) {
+	/*
+	 * The controller returns the wire command byte, with the reply code in
+	 * its upper nibble: a native DEFER reads 0x20, not 0x02. Reject the
+	 * reserved low bits and keep the raw byte for diagnostics.
+	 */
+	reply = status >> 4;
+	if (status & 0x0f)
+		reply = 0xff;
+
+	switch (reply) {
 	case 0: /* ACK */
 		msg->reply = DP_AUX_NATIVE_REPLY_ACK;
 		break;
@@ -713,22 +721,28 @@ static int spacemit_dp_link_apply_adjust(struct spacemit_dp_dev *dp,
 	int i, ret;
 
 	for (i = 0; i < lanes; i++) {
-		u8 v = drm_dp_get_adjust_request_voltage(link_status, i);
-		u8 p = drm_dp_get_adjust_request_pre_emphasis(link_status, i);
-		u8 v_bits;
+		/* The DPCD helpers return the levels in their register position. */
+		u8 v = drm_dp_get_adjust_request_voltage(link_status, i) >>
+			DP_TRAIN_VOLTAGE_SWING_SHIFT;
+		u8 p = drm_dp_get_adjust_request_pre_emphasis(link_status, i) >>
+			DP_TRAIN_PRE_EMPHASIS_SHIFT;
+		u8 v_bits, max_pre, max_swing;
 
+		/* Swing plus pre-emphasis may not exceed level 3. */
 		if (v >= SPACEMIT_DP_SWING_MAX)
 			v = SPACEMIT_DP_SWING_MAX;
-		if (p >= SPACEMIT_DP_PREEMP_MAX)
-			p = SPACEMIT_DP_PREEMP_MAX;
+		max_pre = min_t(u8, SPACEMIT_DP_PREEMP_MAX, 3 - v);
+		if (p > max_pre)
+			p = max_pre;
+		max_swing = min_t(u8, SPACEMIT_DP_SWING_MAX, 3 - p);
 
 		opts.dp.voltage[i] = v;
 		opts.dp.pre[i] = p;
 
 		v_bits = v;
-		if (v == SPACEMIT_DP_SWING_MAX)
+		if (v == max_swing)
 			v_bits |= DP_TRAIN_MAX_SWING_REACHED;
-		if (p == SPACEMIT_DP_PREEMP_MAX)
+		if (p == max_pre)
 			v_bits |= DP_TRAIN_MAX_PRE_EMPHASIS_REACHED;
 
 		training_set[i] = v_bits | (p << DP_TRAIN_PRE_EMPHASIS_SHIFT);
