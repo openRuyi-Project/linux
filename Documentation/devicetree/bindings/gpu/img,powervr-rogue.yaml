@@ -23,6 +23,7 @@ properties:
           - const: img,img-rogue
       - items:
           - enum:
+              - spacemit,k3-gpu
               - thead,th1520-gpu
           - const: img,img-bxm-4-64
           - const: img,img-rogue
@@ -102,7 +103,9 @@ allOf:
       properties:
         compatible:
           contains:
-            const: thead,th1520-gpu
+            enum:
+              - spacemit,k3-gpu
+              - thead,th1520-gpu
     then:
       properties:
         clocks:
@@ -112,7 +115,7 @@ allOf:
         power-domains:
           items:
             - description: The single, unified power domain for the GPU on the
-                TH1520 SoC, integrating all internal IP power domains.
+                SoC, integrating all internal IP power domains.
         power-domain-names: false
       required:
         - power-domains
