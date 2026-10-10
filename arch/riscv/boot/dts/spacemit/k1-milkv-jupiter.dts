@@ -82,6 +82,16 @@
 		vin-supply = <&reg_dc_in>;
 	};
 
+	reg_usb2_vbus: regulator-usb2-vbus-5v {
+		compatible = "regulator-fixed";
+		regulator-name = "USB20_VBUS";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		vin-supply = <&reg_vcc_5v>;
+		gpio = <&gpio K1_GPIO(127) GPIO_ACTIVE_HIGH>;
+		enable-active-high;
+	};
+
 	regulator-usb3-vbus-5v {
 		compatible = "regulator-fixed";
 		regulator-name = "USB30_VBUS";
@@ -443,8 +453,33 @@
 	status = "okay";
 };
 
+&usbphy0 {
+	status = "okay";
+};
+
+&usbphy1 {
+	status = "okay";
+};
+
 &usbphy2 {
 	status = "okay";
+};
+
+&usb2_0 {
+	status = "okay";
+};
+
+&usb2_1 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	vbus-supply = <&reg_usb2_vbus>;
+	status = "okay";
+
+	hub_2_1: hub@1 {
+		compatible = "usb1a40,0101";
+		reg = <1>;
+		vdd-supply = <&pcie_vcc_3v3>;
+	};
 };
 
 &usb_dwc3 {
