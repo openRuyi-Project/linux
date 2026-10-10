@@ -581,6 +581,16 @@ static int spacemit_dp_phy_on(struct spacemit_dp_dev *dp)
 		return ret;
 
 	dp->phy_powered = true;
+
+	/*
+	 * The HPD event enables only latch while the pixel PLL runs; written
+	 * earlier they read back as zero. They speed up hotplug detection;
+	 * connector polling still covers the time the link is down.
+	 */
+	regmap_write_bits(dp->regs, DP_HPD_INTERRUPT_ENABLE,
+			  DP_SINK_IRQ_EVENT_MSK | DP_HOT_PLUG_EVENT_MSK |
+			  DP_HOT_UNPLUG_EVENT_MSK | DP_SINK_UNPLUG_ERROR_EVENT_MSK,
+			  DP_HOT_PLUG_EVENT_MSK | DP_HOT_UNPLUG_EVENT_MSK);
 	return 0;
 }
 
@@ -1552,13 +1562,11 @@ static irqreturn_t spacemit_dp_irq_handler(int irq, void *data)
 	}
 
 	/*
-	 * Only compare here: the authoritative connector_status update
-	 * happens in the thread under mode_lock, via .detect().
+	 * Wake the thread for a latched plug or unplug event; it re-runs
+	 * .detect() under mode_lock and notifies the connector if needed.
 	 */
-	if (spacemit_dp_hw_detect_hpd(dp) != READ_ONCE(dp->connector_status))
+	if (spacemit_dp_hw_clean_hpd(dp))
 		ret = IRQ_WAKE_THREAD;
-	if (spacemit_dp_hw_clean_hpd(dp) && ret == IRQ_NONE)
-		ret = IRQ_HANDLED;
 
 	drm_dev_exit(idx);
 	return ret;
@@ -1567,17 +1575,16 @@ static irqreturn_t spacemit_dp_irq_handler(int irq, void *data)
 static irqreturn_t spacemit_dp_hotplug_event_handler(int irq, void *data)
 {
 	struct spacemit_dp_dev *dp = data;
-	enum drm_connector_status status;
 	int idx;
 
 	if (!drm_dev_enter(dp->drm, &idx))
 		return IRQ_HANDLED;
 
 	/*
-	 * .detect() owns mode_lock and re-reads the sink caps on a fresh plug
+	 * The DP bridge has no OP_HPD, so notify the connector directly;
+	 * .detect() owns mode_lock and re-reads the sink caps on a fresh plug.
 	 */
-	status = spacemit_dp_bridge_detect(&dp->bridge, dp->connector);
-	drm_bridge_hpd_notify(&dp->bridge, status);
+	drm_connector_helper_hpd_irq_event(dp->connector);
 
 	drm_dev_exit(idx);
 	return IRQ_HANDLED;
@@ -1704,21 +1711,9 @@ static int spacemit_dp_dev_init(struct spacemit_dp_dev *dp)
 	regmap_write_bits(dp->regs, DP_GENERAL_INTERRUPT_MASK,
 			  DP_VIDEO_FIFO_OVERFLOW_INT_STA_S0_MSK,
 			  FIELD_PREP(DP_VIDEO_FIFO_OVERFLOW_INT_STA_S0_MSK, 0x0));
-	regmap_write_bits(dp->regs, DP_HPD_INTERRUPT_ENABLE,
-			  DP_SINK_IRQ_EVENT_MSK,
-			  FIELD_PREP(DP_SINK_IRQ_EVENT_MSK, 0x0));
 	regmap_write_bits(dp->regs, DP_GENERAL_INTERRUPT_MASK,
 			  DP_HPD_INT_STA_MSK,
 			  FIELD_PREP(DP_HPD_INT_STA_MSK, 0x1));
-	regmap_write_bits(dp->regs, DP_HPD_INTERRUPT_ENABLE,
-			  DP_HOT_PLUG_EVENT_MSK,
-			  FIELD_PREP(DP_HOT_PLUG_EVENT_MSK, 0x1));
-	regmap_write_bits(dp->regs, DP_HPD_INTERRUPT_ENABLE,
-			  DP_HOT_UNPLUG_EVENT_MSK,
-			  FIELD_PREP(DP_HOT_UNPLUG_EVENT_MSK, 0x1));
-	regmap_write_bits(dp->regs, DP_HPD_INTERRUPT_ENABLE,
-			  DP_SINK_UNPLUG_ERROR_EVENT_MSK,
-			  FIELD_PREP(DP_SINK_UNPLUG_ERROR_EVENT_MSK, 0x0));
 	usleep_range(2000, 4000);
 
 	regmap_write_bits(dp->regs, DP_PHYIF_CTRL_ADDR, DP_PHY_BUSY_BYP,
@@ -1886,6 +1881,13 @@ static int spacemit_dp_bind(struct device *dev, struct device *master,
 		dev_err_probe(dev, ret, "failed to init bridge connector\n");
 		goto err_encoder;
 	}
+
+	/*
+	 * Polling stays the baseline because the pixel clock gates the HPD
+	 * interrupt; the interrupt only shortens the detection latency.
+	 */
+	if (!dp->edp_mode)
+		dp->connector->polled |= DRM_CONNECTOR_POLL_HPD;
 
 	ret = spacemit_dp_dev_init(dp);
 	if (ret)
