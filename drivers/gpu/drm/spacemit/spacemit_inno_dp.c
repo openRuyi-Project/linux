@@ -31,6 +31,7 @@
 #include <drm/display/drm_dp_aux_bus.h>
 #include <drm/display/drm_dp_helper.h>
 #include <drm/drm_atomic.h>
+#include <drm/drm_atomic_helper.h>
 #include <drm/drm_atomic_state_helper.h>
 #include <drm/drm_bridge.h>
 #include <drm/drm_bridge_connector.h>
@@ -2174,7 +2175,23 @@ static void spacemit_dp_remove(struct platform_device *pdev)
 
 static void spacemit_dp_shutdown(struct platform_device *pdev)
 {
-	spacemit_dp_hw_disable(platform_get_drvdata(pdev));
+	struct spacemit_dp_dev *dp = platform_get_drvdata(pdev);
+
+	/*
+	 * The DP device can shut down before the DPU. Stop connector polling,
+	 * modeset retries and the HPD interrupt, and take the pipeline down,
+	 * before the AUX and pixel clocks go away; otherwise AUX transfers
+	 * keep timing out and a reboot after failed link training stalls.
+	 */
+	if (dp->drm) {
+		disable_work_sync(&dp->modeset_retry_work);
+		disable_irq(dp->irq);
+		drm_kms_helper_poll_disable(dp->drm);
+		drm_atomic_helper_shutdown(dp->drm);
+	}
+
+	guard(mutex)(&dp->mode_lock);
+	spacemit_dp_hw_disable(dp);
 }
 
 static const struct of_device_id spacemit_dp_match[] = {
