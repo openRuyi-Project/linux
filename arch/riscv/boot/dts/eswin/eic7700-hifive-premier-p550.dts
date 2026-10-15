@@ -6,6 +6,8 @@
 /dts-v1/;
 
 #include "eic7700.dtsi"
+#include "eic7700-pinctrl.dtsi"
+#include <dt-bindings/gpio/gpio.h>
 
 / {
 	compatible = "sifive,hifive-premier-p550", "eswin,eic7700";
@@ -18,6 +20,30 @@
 	chosen {
 		stdout-path = "serial0:115200n8";
 	};
+
+	leds {
+		compatible = "gpio-leds";
+		pinctrl-names = "default";
+		pinctrl-0 = <&gpio84_pins>;
+
+		led-0 {
+			gpios = <&gpioC 20 GPIO_ACTIVE_HIGH>;
+		};
+	};
+
+	vcc_1v8: regulator-vcc1v8 {
+		compatible = "regulator-fixed";
+		regulator-name = "vcc1v8";
+		regulator-always-on;
+		regulator-boot-on;
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <1800000>;
+	};
+};
+
+&gpio84_pins {
+	bias-disable;
+	input-disable;
 };
 
 &osc {
@@ -25,10 +51,18 @@
 	clock-output-names = "osc_24m";
 };
 
+&pinctrl {
+	vrgmii-supply = <&vcc_1v8>;
+};
+
 &uart0 {
 	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&uart0_pins>;
 };
 
 &uart2 {
 	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&uart2_pins>;
 };
