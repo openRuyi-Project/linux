@@ -18,6 +18,7 @@
 #define SR_MPP		_AC(0x00001800, UL) /* Previously Machine */
 #define SR_MPP_SHIFT	11
 #define SR_SUM		_AC(0x00040000, UL) /* Supervisor User Memory Access */
+#define SR_MXR		_AC(0x00080000, UL) /* Make eXecutable Readable */
 
 /* zicfilp landing pad status bit */
 #define SR_SPELP	_AC(0x00800000, UL)
