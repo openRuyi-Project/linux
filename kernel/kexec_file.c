@@ -710,6 +710,13 @@ static int kexec_alloc_contig(struct kexec_buf *kbuf)
 
 	mem = page_to_boot_pfn(p) << PAGE_SHIFT;
 
+	/* dma_alloc_from_contiguous() caps the alignment at CONFIG_CMA_ALIGNMENT. */
+	if (!IS_ALIGNED(mem, kbuf->buf_align)) {
+		pr_debug("CMA block 0x%lx is not aligned to 0x%lx\n", mem, kbuf->buf_align);
+		dma_release_from_contiguous(NULL, p, nr_pages);
+		return -EINVAL;
+	}
+
 	if (kimage_is_destination_range(kbuf->image, mem, mem + kbuf->memsz)) {
 		/* Our region is already in use by a statically defined one. Bail out. */
 		pr_debug("CMA overlaps existing mem: 0x%lx+0x%lx\n", mem, kbuf->memsz);
