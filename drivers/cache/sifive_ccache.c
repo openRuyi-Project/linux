@@ -68,6 +68,7 @@ enum {
 enum {
 	QUIRK_NONSTANDARD_CACHE_OPS	= BIT(0),
 	QUIRK_BROKEN_DATA_UNCORR	= BIT(1),
+	QUIRK_ENABLE_ALL_WAYS		= BIT(2),
 };
 
 #ifdef CONFIG_DEBUG_FS
@@ -117,9 +118,25 @@ static void ccache_config_read(void)
 	pr_info("Index of the largest way enabled: %u\n", cfg);
 }
 
+static int ccache_enable_all_ways(void)
+{
+	u32 config, ways;
+
+	config = readl(ccache_base + SIFIVE_CCACHE_CONFIG);
+	ways = FIELD_GET(SIFIVE_CCACHE_CONFIG_WAYS_MASK, config);
+	if (!ways) {
+		pr_err("Invalid cache configuration: zero ways\n");
+		return -EINVAL;
+	}
+
+	writel(ways - 1, ccache_base + SIFIVE_CCACHE_WAYENABLE);
+
+	return 0;
+}
+
 static const struct of_device_id sifive_ccache_ids[] = {
 	{ .compatible = "eswin,eic7700-l3-cache",
-	  .data = (void *)(QUIRK_NONSTANDARD_CACHE_OPS) },
+	  .data = (void *)(QUIRK_NONSTANDARD_CACHE_OPS | QUIRK_ENABLE_ALL_WAYS) },
 	{ .compatible = "sifive,fu540-c000-ccache" },
 	{ .compatible = "sifive,fu740-c000-ccache" },
 	{ .compatible = "starfive,jh7100-ccache",
@@ -317,6 +334,13 @@ static int __init sifive_ccache_init(void)
 	if (of_property_read_u32(np, "cache-level", &level)) {
 		rc = -ENOENT;
 		goto err_unmap;
+	}
+
+	if ((quirks & QUIRK_ENABLE_ALL_WAYS) &&
+	    !of_property_present(np, "memory-region")) {
+		rc = ccache_enable_all_ways();
+		if (rc)
+			goto err_unmap;
 	}
 
 #ifdef CONFIG_RISCV_NONSTANDARD_CACHE_OPS
