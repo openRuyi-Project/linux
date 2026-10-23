@@ -34,24 +34,22 @@ SYM_CODE_START(riscv_kexec_relocate)
 	csrw	CSR_SIP, zero
 
 	/*
-	 * When we switch SATP.MODE to "Bare" we'll only
-	 * play with physical addresses. However the first time
-	 * we try to jump somewhere, the offset on the jump
-	 * will be relative to pc which will still be on VA. To
-	 * deal with this we set stvec to the physical address at
-	 * the start of the loop below so that we jump there in
-	 * any case.
+	 * Switch SATP.MODE to "Bare" before reading any entry. An image
+	 * whose segments were allocated from CMA at their destination has
+	 * no indirection pages, so its list may hold only IND_DONE.
+	 *
+	 * pc is still a VA here: set stvec to the physical address of the
+	 * loop below, so that we get there even if the next instruction
+	 * fetch faults. The entry list starts at image->head, in the
+	 * linear mapping.
 	 */
 	la	s6, 1f
 	sub	s6, s6, s4
+	sub	s0, s0, s4
 	csrw	CSR_STVEC, s6
-
-	/*
-	 * With C-extension, here we get 42 Bytes and the next
-	 * .align directive would pad zeros here up to 44 Bytes.
-	 * So manually put a nop here to avoid zeros padding.
-	*/
-	nop
+	csrw	CSR_SATP, zero
+	sfence.vma
+	jr	s6
 
 	/* Process entries in a loop */
 .align 2
@@ -70,8 +68,7 @@ SYM_CODE_START(riscv_kexec_relocate)
 	andi	t1, t0, 0x2
 	beqz	t1, 2f
 	andi	s0, t0, ~0x2
-	csrw	CSR_SATP, zero
-	jr	s6
+	j	1b
 
 2:
 	/* IND_DONE entry ? -> jump to done label */
