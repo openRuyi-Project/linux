@@ -84,6 +84,12 @@ static bool kvm_fwft_is_defined_feature(enum sbi_fwft_feature_t feature)
 	return false;
 }
 
+/* features implemented by setting bits in henvcfg need the CSR to exist */
+static bool kvm_sbi_fwft_have_henvcfg(void)
+{
+	return !static_branch_unlikely(&kvm_riscv_no_xenvcfg);
+}
+
 static bool kvm_sbi_fwft_misaligned_delegation_supported(struct kvm_vcpu *vcpu)
 {
 	return misaligned_traps_can_delegate();
@@ -139,7 +145,8 @@ static bool kvm_sbi_fwft_pointer_masking_pmlen_supported(struct kvm_vcpu *vcpu)
 {
 	struct kvm_sbi_fwft *fwft = vcpu_to_fwft(vcpu);
 
-	if (!riscv_isa_extension_available(vcpu->arch.isa, SMNPM))
+	if (!kvm_sbi_fwft_have_henvcfg() ||
+	    !riscv_isa_extension_available(vcpu->arch.isa, SMNPM))
 		return false;
 
 	fwft->have_vs_pmlen_7 = try_to_set_pmm(ENVCFG_PMM_PMLEN_7);
