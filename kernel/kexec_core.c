@@ -797,14 +797,14 @@ static int kimage_load_cma_segment(struct kimage *image, int idx)
 			goto out;
 		}
 
+		/* CMA pages are not cleared: zero the part without source data */
+		memset(ptr + uchunk, 0, mchunk - uchunk);
+
 		ptr    += mchunk;
 		mbytes -= mchunk;
 
 		cond_resched();
 	}
-
-	/* Clear any remainder */
-	memset(ptr, 0, mbytes);
 
 out:
 	return result;
