@@ -14,6 +14,19 @@
 #include <asm/kvm_mmu.h>
 #include <asm/kvm_nacl.h>
 #include <asm/sbi.h>
+#include <asm/vendorid_list.h>
+
+DEFINE_STATIC_KEY_FALSE(kvm_riscv_no_xenvcfg);
+
+static void kvm_riscv_setup_vendor_features(void)
+{
+	/* SiFive P550 (ESWIN EIC7700X): H on a 1.11 base, no henvcfg/senvcfg */
+	if (riscv_cached_mvendorid(0) == SIFIVE_VENDOR_ID &&
+	    riscv_cached_marchid(0) == 0x8000000000000008ULL) {
+		static_branch_enable(&kvm_riscv_no_xenvcfg);
+		kvm_info("henvcfg and senvcfg CSRs not implemented\n");
+	}
+}
 
 long kvm_arch_dev_ioctl(struct file *filp,
 			unsigned int ioctl, unsigned long arg)
@@ -159,6 +172,8 @@ static int __init riscv_kvm_init(void)
 	if (kvm_riscv_aia_available())
 		kvm_info("AIA available with %d guest external interrupts\n",
 			 kvm_riscv_aia_nr_hgei);
+
+	kvm_riscv_setup_vendor_features();
 
 	kvm_register_perf_callbacks(NULL);
 
