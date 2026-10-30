@@ -286,6 +286,25 @@ next:
 	}
 }
 
+/*
+ * Clear every G-stage mapping and free all page tables below the PGD.
+ * kvm_riscv_gstage_unmap_range() only clears leaf PTEs and leaves the
+ * page tables in place, so it cannot be used to tear down a G-stage.
+ */
+void kvm_riscv_gstage_unmap_all(struct kvm_gstage *gstage)
+{
+	u32 level = kvm_riscv_gstage_pgd_levels - 1;
+	pte_t *pgd = (pte_t *)gstage->pgd;
+	unsigned long i, page_size;
+
+	if (gstage_level_to_page_size(level, &page_size))
+		return;
+
+	for (i = 0; i < kvm_riscv_gstage_pgd_size / sizeof(pte_t); i++)
+		kvm_riscv_gstage_op_pte(gstage, i * page_size, &pgd[i],
+					level, GSTAGE_OP_CLEAR);
+}
+
 void kvm_riscv_gstage_wp_range(struct kvm_gstage *gstage, gpa_t start, gpa_t end)
 {
 	int ret;
