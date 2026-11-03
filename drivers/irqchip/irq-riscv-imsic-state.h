@@ -9,6 +9,7 @@
 
 #include <linux/irqchip/riscv-imsic.h>
 #include <linux/irqdomain.h>
+#include <linux/irq_work.h>
 #include <linux/fwnode.h>
 #include <linux/timer.h>
 
@@ -34,6 +35,9 @@ struct imsic_local_priv {
 	unsigned long				*dirty_bitmap;
 
 #ifdef CONFIG_SMP
+	/* Remote synchronization must not depend on a timer interrupt. */
+	struct irq_work				sync_work;
+
 	/* Local timer for synchronization */
 	struct timer_list			timer;
 #endif

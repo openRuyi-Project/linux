@@ -651,6 +651,7 @@ config RISCV_IMSIC
 	bool
 	depends on RISCV
 	select IRQ_DOMAIN_HIERARCHY
+	select IRQ_WORK if SMP
 	select GENERIC_IRQ_MATRIX_ALLOCATOR
 	select GENERIC_MSI_IRQ
 	select IRQ_MSI_LIB
