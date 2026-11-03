@@ -252,6 +252,11 @@ void imsic_local_delivery(bool enable)
 }
 
 #ifdef CONFIG_SMP
+static void imsic_local_sync_work(struct irq_work *work)
+{
+	imsic_local_sync_all(false);
+}
+
 static void imsic_local_timer_callback(struct timer_list *timer)
 {
 	imsic_local_sync_all(false);
@@ -268,18 +273,19 @@ static void __imsic_remote_sync(struct imsic_local_priv *lpriv, unsigned int cpu
 	 */
 
 	/*
-	 * We schedule a timer on the target CPU if the target CPU is not
-	 * same as the current CPU. An offline CPU will unconditionally
-	 * synchronize IDs through imsic_starting_cpu() when the
-	 * CPU is brought up.
+	 * A remote CPU may have stopped its local timer and be waiting for
+	 * the broadcast interrupt whose IMSIC state needs updating. Use an
+	 * IPI-backed work item so enabling that interrupt does not depend on
+	 * its delivery. An offline CPU synchronizes IDs in imsic_starting_cpu().
 	 */
 	if (cpu_online(cpu)) {
 		if (cpu == smp_processor_id()) {
 			if (__imsic_local_sync(lpriv))
 				return;
+			__imsic_local_timer_start(lpriv, cpu);
+		} else {
+			irq_work_queue_on(&lpriv->sync_work, cpu);
 		}
-
-		__imsic_local_timer_start(lpriv, cpu);
 	}
 }
 #else
@@ -510,6 +516,7 @@ static int __init imsic_local_init(void)
 #ifdef CONFIG_SMP
 		/* Setup lazy timer for synchronization */
 		timer_setup(&lpriv->timer, imsic_local_timer_callback, TIMER_PINNED);
+		lpriv->sync_work = IRQ_WORK_INIT_HARD(imsic_local_sync_work);
 #endif
 
 		/* Allocate vector array */
