@@ -33,11 +33,11 @@ static int gstage_page_fault(struct kvm_vcpu *vcpu, struct kvm_run *run,
 	    (trap->scause == EXC_STORE_GUEST_PAGE_FAULT && !writable)) {
 		switch (trap->scause) {
 		case EXC_LOAD_GUEST_PAGE_FAULT:
-			return kvm_riscv_vcpu_mmio_load(vcpu, run,
+			return kvm_riscv_vcpu_mmio_load(vcpu, run, trap,
 							fault_addr,
 							trap->htinst);
 		case EXC_STORE_GUEST_PAGE_FAULT:
-			return kvm_riscv_vcpu_mmio_store(vcpu, run,
+			return kvm_riscv_vcpu_mmio_store(vcpu, run, trap,
 							 fault_addr,
 							 trap->htinst);
 		case EXC_INST_GUEST_PAGE_FAULT: {
