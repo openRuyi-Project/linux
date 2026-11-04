@@ -359,11 +359,37 @@ int kvm_riscv_vcpu_virtual_insn(struct kvm_vcpu *vcpu, struct kvm_run *run,
 	}
 }
 
+/*
+ * Per riscv-priv spec, non-idempotent regions might not support misaligned
+ * access. If it's not supported, misaligned access should raise access-fault
+ * exception rather than misaligned exceptions.
+ *
+ * Check for misaligned MMIO access. Inject an access fault if it's misalgined.
+ */
+static bool kvm_riscv_check_misaligned_mmio(struct kvm_vcpu *vcpu,
+					    struct kvm_cpu_trap *trap,
+					    bool write, gpa_t fault_addr, int len)
+{
+	struct kvm_cpu_trap misalign_trap = { 0 };
+
+	if (fault_addr & (len - 1)) {
+		misalign_trap.scause = write ? EXC_STORE_ACCESS : EXC_LOAD_ACCESS;
+		misalign_trap.stval = trap->stval;
+		misalign_trap.sepc = trap->sepc;
+
+		kvm_riscv_vcpu_trap_redirect(vcpu, &misalign_trap);
+		return true;
+	}
+
+	return false;
+}
+
 /**
  * kvm_riscv_vcpu_mmio_load -- Emulate MMIO load instruction
  *
  * @vcpu: The VCPU pointer
  * @run:  The VCPU run struct containing the mmio data
+ * @trap: The VCPU trap context of this fault
  * @fault_addr: Guest physical address to load
  * @htinst: Transformed encoding of the load instruction
  *
@@ -372,7 +398,7 @@ int kvm_riscv_vcpu_virtual_insn(struct kvm_vcpu *vcpu, struct kvm_run *run,
  * Returns < 0 to report failure and exit run-loop
  */
 int kvm_riscv_vcpu_mmio_load(struct kvm_vcpu *vcpu, struct kvm_run *run,
-			     gpa_t fault_addr,
+			     struct kvm_cpu_trap *trap, gpa_t fault_addr,
 			     unsigned long htinst)
 {
 	u8 data_buf[8];
@@ -451,9 +477,8 @@ int kvm_riscv_vcpu_mmio_load(struct kvm_vcpu *vcpu, struct kvm_run *run,
 		return -EOPNOTSUPP;
 	}
 
-	/* Fault address should be aligned to length of MMIO */
-	if (fault_addr & (len - 1))
-		return -EIO;
+	if (kvm_riscv_check_misaligned_mmio(vcpu, trap, false, fault_addr, len))
+		return 1;
 
 	trace_kvm_mmio_emulate(vcpu->vcpu_id, ct->sepc, raw_insn, fault_addr,
 			       false, len);
@@ -491,6 +516,7 @@ int kvm_riscv_vcpu_mmio_load(struct kvm_vcpu *vcpu, struct kvm_run *run,
  *
  * @vcpu: The VCPU pointer
  * @run:  The VCPU run struct containing the mmio data
+ * @trap: The VCPU trap context of this fault
  * @fault_addr: Guest physical address to store
  * @htinst: Transformed encoding of the store instruction
  *
@@ -499,7 +525,7 @@ int kvm_riscv_vcpu_mmio_load(struct kvm_vcpu *vcpu, struct kvm_run *run,
  * Returns < 0 to report failure and exit run-loop
  */
 int kvm_riscv_vcpu_mmio_store(struct kvm_vcpu *vcpu, struct kvm_run *run,
-			      gpa_t fault_addr,
+			      struct kvm_cpu_trap *trap, gpa_t fault_addr,
 			      unsigned long htinst)
 {
 	u8 data8;
@@ -572,9 +598,8 @@ int kvm_riscv_vcpu_mmio_store(struct kvm_vcpu *vcpu, struct kvm_run *run,
 		return -EOPNOTSUPP;
 	}
 
-	/* Fault address should be aligned to length of MMIO */
-	if (fault_addr & (len - 1))
-		return -EIO;
+	if (kvm_riscv_check_misaligned_mmio(vcpu, trap, true, fault_addr, len))
+		return 1;
 
 	trace_kvm_mmio_emulate(vcpu->vcpu_id, ct->sepc, raw_insn, fault_addr,
 			       true, len);
