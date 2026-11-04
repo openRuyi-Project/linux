@@ -329,7 +329,23 @@
 
 #if defined(CONFIG_64BIT) && defined(CONFIG_RISCV_ISA_ZACAS) && defined(CONFIG_TOOLCHAIN_HAS_ZACAS)
 
-#define system_has_cmpxchg128()        riscv_has_extension_unlikely(RISCV_ISA_EXT_ZACAS)
+#define system_has_cmpxchg128 system_has_cmpxchg128
+static __always_inline bool system_has_cmpxchg128(void)
+{
+	/* The vendor erratum overrides the standard Zacas alternative. */
+	asm goto(ALTERNATIVE_2(
+			"nop",
+			"j %l[l_yes]",
+			STANDARD_EXT, RISCV_ISA_EXT_ZACAS, 1,
+			"nop",
+			PICOHEART_VENDOR_ID, ERRATA_PICOHEART_AMOCASQ,
+			CONFIG_ERRATA_PICOHEART_AMOCASQ)
+		: : : : l_yes);
+
+	return false;
+l_yes:
+	return true;
+}
 
 union __u128_halves {
 	u128 full;
