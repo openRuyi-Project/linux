@@ -57,9 +57,12 @@ static void aplic_msi_irq_retrigger_level(struct irq_data *d)
 static void aplic_msi_irq_eoi(struct irq_data *d)
 {
 	/*
-	 * EOI handling is required only for level-triggered interrupts
-	 * when APLIC is in MSI mode.
+	 * The fasteoi flow does not call irq_ack. Let the IMSIC parent
+	 * process affinity moves deferred while its previous vector move
+	 * was still in flight. Both edge and level sources need this.
 	 */
+	irq_chip_ack_parent(d);
+
 	aplic_msi_irq_retrigger_level(d);
 }
 
