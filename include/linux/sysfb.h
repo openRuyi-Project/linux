@@ -95,12 +95,18 @@ static inline bool sysfb_handles_screen_info(void)
 
 extern struct efifb_dmi_info efifb_dmi_list[];
 void sysfb_apply_efi_quirks(struct screen_info *si);
+bool sysfb_efifb_behind_dt_pci(const struct screen_info *si);
 void sysfb_set_efifb_fwnode(const struct screen_info *si, struct platform_device *pd);
 
 #else /* CONFIG_EFI */
 
 static inline void sysfb_apply_efi_quirks(struct screen_info *si)
 {
+}
+
+static inline bool sysfb_efifb_behind_dt_pci(const struct screen_info *si)
+{
+	return false;
 }
 
 static inline void sysfb_set_efifb_fwnode(const struct screen_info *si,
