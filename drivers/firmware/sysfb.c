@@ -164,8 +164,14 @@ static __init int sysfb_init(void)
 		goto unlock_mutex;
 	}
 
-	/* try to create a simple-framebuffer device */
+	/*
+	 * Try to create a simple-framebuffer device. It claims the memory
+	 * when it is added, so a DT PCI host bridge that probes later would
+	 * fail. Use an efi-framebuffer device there; it waits for the bridge.
+	 */
 	compatible = sysfb_parse_mode(si, &mode);
+	if (compatible && !parent && sysfb_efifb_behind_dt_pci(si))
+		compatible = false;
 	if (compatible) {
 		pd = sysfb_create_simplefb(si, &mode, parent);
 		if (!IS_ERR(pd))
