@@ -421,6 +421,22 @@ __init void sysfb_apply_efi_quirks(struct screen_info *si)
 		dmi_check_system(efifb_dmi_swap_width_height);
 }
 
+/* Returns true if the EFI framebuffer is in a DT PCI host bridge window */
+__init bool sysfb_efifb_behind_dt_pci(const struct screen_info *si)
+{
+	struct device_node *np;
+
+	if (si->orig_video_isVGA != VIDEO_TYPE_EFI || !IS_ENABLED(CONFIG_PCI))
+		return false;
+
+	np = find_pci_overlap_node();
+	if (!np)
+		return false;
+
+	of_node_put(np);
+	return true;
+}
+
 __init void sysfb_set_efifb_fwnode(const struct screen_info *si, struct platform_device *pd)
 {
 	if (si->orig_video_isVGA == VIDEO_TYPE_EFI && IS_ENABLED(CONFIG_PCI)) {
