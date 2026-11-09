@@ -1,0 +1,55 @@
+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+%YAML 1.2
+---
+$id: http://devicetree.org/schemas/hwmon/eswin,eic7700-fan-control.yaml#
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+
+title: ESWIN EIC7700 fan tachometer
+
+maintainers:
+  - Han Gao <gaohan@iscas.ac.cn>
+
+description:
+  The controller counts APB clock cycles between tachometer pulses.
+
+properties:
+  compatible:
+    const: eswin,eic7700-fan-control
+
+  reg:
+    maxItems: 1
+
+  interrupts:
+    maxItems: 1
+
+  clocks:
+    maxItems: 1
+
+  resets:
+    maxItems: 1
+
+  pulses-per-revolution:
+    description: Number of tachometer pulses per fan revolution.
+    $ref: /schemas/types.yaml#/definitions/uint32
+    enum: [1, 2, 4]
+
+required:
+  - compatible
+  - reg
+  - interrupts
+  - clocks
+  - resets
+  - pulses-per-revolution
+
+additionalProperties: false
+
+examples:
+  - |
+    fan-controller@50b50000 {
+        compatible = "eswin,eic7700-fan-control";
+        reg = <0x50b50000 0x10000>;
+        interrupts = <354>;
+        clocks = <&clk 243>;
+        resets = <&reset 110>;
+        pulses-per-revolution = <2>;
+    };
