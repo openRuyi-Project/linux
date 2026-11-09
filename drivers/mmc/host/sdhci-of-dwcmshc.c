@@ -1433,19 +1433,25 @@ static int dwcmshc_hpe_gsc_init(struct device *dev, struct sdhci_host *host,
 static void sdhci_eic7700_set_clock(struct sdhci_host *host, unsigned int clock)
 {
 	struct sdhci_pltfm_host *pltfm_host = sdhci_priv(host);
-	u16 clk;
+	int ret;
 
-	host->mmc->actual_clock = clock;
+	host->mmc->actual_clock = 0;
+	/* Stop SDCLK before changing the external divider or its parent. */
+	sdhci_writew(host, 0, SDHCI_CLOCK_CONTROL);
 
-	if (clock == 0) {
-		sdhci_set_clock(host, clock);
+	if (clock == 0)
+		return;
+
+	ret = clk_set_rate(pltfm_host->clk, clock);
+	if (ret) {
+		dev_err(mmc_dev(host->mmc), "failed to set card clock: %d\n", ret);
 		return;
 	}
 
-	clk_set_rate(pltfm_host->clk, clock);
-
-	clk = sdhci_readw(host, SDHCI_CLOCK_CONTROL);
-	sdhci_enable_clk(host, clk);
+	/* The SoC divider supplies SDCLK. Bypass the SDHCI divider. */
+	sdhci_enable_clk(host, 0);
+	if (sdhci_readw(host, SDHCI_CLOCK_CONTROL) & SDHCI_CLOCK_CARD_EN)
+		host->mmc->actual_clock = clk_get_rate(pltfm_host->clk);
 }
 
 static void sdhci_eic7700_config_phy_delay(struct sdhci_host *host, int delay)
