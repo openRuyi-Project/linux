@@ -1,0 +1,76 @@
+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+%YAML 1.2
+---
+$id: http://devicetree.org/schemas/hwmon/eswin,eic7700-fan-control.yaml#
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+
+title: ESWIN EIC7700 fan controller
+
+maintainers:
+  - Han Gao <gaohan@iscas.ac.cn>
+
+description:
+  The fan controller of the ESWIN EIC7700 SoC measures the fan speed from
+  the tachometer input and controls the fan speed through a PWM channel.
+
+properties:
+  compatible:
+    const: eswin,eic7700-fan-control
+
+  reg:
+    maxItems: 1
+
+  interrupts:
+    maxItems: 1
+
+  clocks:
+    maxItems: 1
+
+  resets:
+    maxItems: 1
+
+  pwms:
+    maxItems: 1
+
+  pulses-per-revolution:
+    description: Number of tachometer pulses per fan revolution.
+    $ref: /schemas/types.yaml#/definitions/uint32
+    enum: [1, 2, 4]
+
+  cooling-levels:
+    description:
+      PWM duty cycle values, from 0 to 255, for each cooling state of the
+      fan, in ascending order.
+    $ref: /schemas/types.yaml#/definitions/uint32-array
+    items:
+      maximum: 255
+
+  "#cooling-cells":
+    const: 2
+
+required:
+  - compatible
+  - reg
+  - interrupts
+  - clocks
+  - resets
+  - pwms
+  - pulses-per-revolution
+
+additionalProperties: false
+
+examples:
+  - |
+    #include <dt-bindings/pwm/pwm.h>
+
+    fan-controller@50b50000 {
+        compatible = "eswin,eic7700-fan-control";
+        reg = <0x50b50000 0x10000>;
+        interrupts = <354>;
+        clocks = <&clk 243>;
+        resets = <&reset 110>;
+        pwms = <&pwm0 0 100000 PWM_POLARITY_INVERTED>;
+        pulses-per-revolution = <2>;
+        cooling-levels = <64 128 192 255>;
+        #cooling-cells = <2>;
+    };
