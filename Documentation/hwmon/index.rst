@@ -71,6 +71,7 @@ Hardware Monitoring Kernel Drivers
    ds1621
    ds620
    e50sn12051
+   eic7700-fan
    emc1403
    emc1812
    emc2103
