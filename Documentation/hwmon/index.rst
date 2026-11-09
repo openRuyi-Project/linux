@@ -68,6 +68,7 @@ Hardware Monitoring Kernel Drivers
    drivetemp
    ds1621
    ds620
+   eic7700-fan
    emc1403
    emc2103
    emc2305
