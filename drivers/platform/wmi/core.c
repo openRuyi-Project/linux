@@ -1598,8 +1598,9 @@ static int __init acpi_wmi_init(void)
 {
 	int error;
 
+	/* ACPI video still needs the exported helpers when ACPI is disabled. */
 	if (acpi_disabled)
-		return -ENODEV;
+		return 0;
 
 	error = class_register(&wmi_bus_class);
 	if (error)
@@ -1628,6 +1629,9 @@ err_unreg_class:
 
 static void __exit acpi_wmi_exit(void)
 {
+	if (acpi_disabled)
+		return;
+
 	platform_driver_unregister(&acpi_wmi_driver);
 	bus_unregister(&wmi_bus_type);
 	class_unregister(&wmi_bus_class);
