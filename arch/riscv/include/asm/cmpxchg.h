@@ -418,7 +418,7 @@ static __always_inline void __cmpwait(volatile void *ptr,
 		"	and	%0, %0, %3\n"
 		"	xor	%0, %0, %2\n"
 		"	bnez	%0, 1f\n"
-			ZAWRS_WRS_NTO "\n"
+			ALT_WRS_NTO "\n"
 		"1:"
 		: "=&r" (tmp), "+A" (*(__ptr32b))
 		: "r" (__val), "r" (__mask)
@@ -435,7 +435,7 @@ static __always_inline void __cmpwait(volatile void *ptr,
 		"	and	%0, %0, %3\n"
 		"	xor	%0, %0, %2\n"
 		"	bnez	%0, 1f\n"
-			ZAWRS_WRS_NTO "\n"
+			ALT_WRS_NTO "\n"
 		"1:"
 		: "=&r" (tmp), "+A" (*(__ptr32b))
 		: "r" (__val), "r" (__mask)
@@ -446,7 +446,7 @@ static __always_inline void __cmpwait(volatile void *ptr,
 		"	lr.w	%0, %1\n"
 		"	xor	%0, %0, %2\n"
 		"	bnez	%0, 1f\n"
-			ZAWRS_WRS_NTO "\n"
+			ALT_WRS_NTO "\n"
 		"1:"
 		: "=&r" (tmp), "+A" (*(u32 *)ptr)
 		: "r" (val));
@@ -457,7 +457,7 @@ static __always_inline void __cmpwait(volatile void *ptr,
 		"	lr.d	%0, %1\n"
 		"	xor	%0, %0, %2\n"
 		"	bnez	%0, 1f\n"
-			ZAWRS_WRS_NTO "\n"
+			ALT_WRS_NTO "\n"
 		"1:"
 		: "=&r" (tmp), "+A" (*(u64 *)ptr)
 		: "r" (val));
