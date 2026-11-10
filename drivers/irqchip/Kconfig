@@ -645,6 +645,7 @@ config RISCV_APLIC_MSI
 	bool
 	depends on RISCV_APLIC
 	select GENERIC_MSI_IRQ
+	select IRQ_FASTEOI_HIERARCHY_HANDLERS
 	default RISCV_APLIC
 
 config RISCV_IMSIC
