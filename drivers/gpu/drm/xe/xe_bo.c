@@ -384,6 +384,7 @@ static int xe_tt_map_sg(struct xe_device *xe, struct ttm_tt *tt)
 {
 	struct xe_ttm_tt *xe_tt = container_of(tt, struct xe_ttm_tt, ttm);
 	unsigned long num_pages = tt->num_pages;
+	unsigned long attrs = DMA_ATTR_SKIP_CPU_SYNC;
 	int ret;
 
 	XE_WARN_ON((tt->page_flags & TTM_TT_FLAG_EXTERNAL) &&
@@ -401,8 +402,13 @@ static int xe_tt_map_sg(struct xe_device *xe, struct ttm_tt *tt)
 		return ret;
 
 	xe_tt->sg = &xe_tt->sgt;
-	ret = dma_map_sgtable(xe->drm.dev, xe_tt->sg, DMA_BIDIRECTIONAL,
-			      DMA_ATTR_SKIP_CPU_SYNC);
+#if defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_DEVICE) || \
+	defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_CPU) || \
+	defined(CONFIG_ARCH_HAS_SYNC_DMA_FOR_CPU_ALL)
+	if (!xe->ttm.dma_coherent)
+		attrs = 0;
+#endif
+	ret = dma_map_sgtable(xe->drm.dev, xe_tt->sg, DMA_BIDIRECTIONAL, attrs);
 	if (ret) {
 		sg_free_table(xe_tt->sg);
 		xe_tt->sg = NULL;
