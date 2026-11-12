@@ -347,6 +347,8 @@ static int ufs_spacemit_pwr_change_notify(struct ufs_hba *hba,
 					  enum ufs_notify_change_status status,
 					  struct ufs_pa_layer_attr *dev_req_params)
 {
+	struct ufs_pa_layer_attr intermediate;
+	unsigned long flags;
 	int ret = 0;
 
 	if (!dev_req_params) {
@@ -356,6 +358,33 @@ static int ufs_spacemit_pwr_change_notify(struct ufs_hba *hba,
 
 	switch (status) {
 	case PRE_CHANGE:
+		if ((hba->pwr_info.pwr_rx != SLOW_MODE &&
+		     hba->pwr_info.pwr_rx != SLOWAUTO_MODE) ||
+		    (hba->pwr_info.pwr_tx != SLOW_MODE &&
+		     hba->pwr_info.pwr_tx != SLOWAUTO_MODE) ||
+		    dev_req_params->pwr_rx != FAST_MODE ||
+		    dev_req_params->pwr_tx != FAST_MODE)
+			break;
+
+		/* Stage PWM-to-FAST transitions through FASTAUTO on this PHY. */
+		intermediate = *dev_req_params;
+		intermediate.pwr_rx = FASTAUTO_MODE;
+		intermediate.pwr_tx = FASTAUTO_MODE;
+		/* The nested FASTAUTO request does not match the guard above. */
+		ret = ufshcd_change_power_mode(hba, &intermediate,
+					       UFSHCD_PMC_POLICY_DONT_FORCE);
+		/* The core does not propagate POST_CHANGE errors. */
+		if (!ret)
+			ret = ufs_spacemit_wait_mphy_pll_lock(hba);
+		if (ret) {
+			/* PRE_CHANGE errors alone do not stop the outer PMC. */
+			spin_lock_irqsave(hba->host->host_lock, flags);
+			ufshcd_set_link_broken(hba);
+			spin_unlock_irqrestore(hba->host->host_lock, flags);
+			dev_err(hba->dev, "FASTAUTO staging failed: %d\n", ret);
+			return ret;
+		}
+		dev_dbg(hba->dev, "FASTAUTO staging complete\n");
 		break;
 	case POST_CHANGE:
 		ret = ufs_spacemit_wait_mphy_pll_lock(hba);
