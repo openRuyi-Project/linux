@@ -75,13 +75,16 @@ static int aplic_msi_irq_set_type(struct irq_data *d, unsigned int type)
 	 * acknowledged before the handler runs. The edge flow handler also
 	 * replays an interrupt which arrives while the previous one is
 	 * still being handled on another CPU after an affinity change.
+	 *
+	 * Level-triggered sources use the fasteoi flow, but still need the
+	 * ack so that the IMSIC parent applies deferred affinity changes.
 	 */
 	if (type & IRQ_TYPE_EDGE_BOTH) {
 		irq_set_chip_handler_name_locked(d, irq_data_get_irq_chip(d),
 						 handle_edge_irq, "edge");
 	} else {
 		irq_set_chip_handler_name_locked(d, irq_data_get_irq_chip(d),
-						 handle_fasteoi_irq, "fasteoi");
+						 handle_fasteoi_ack_irq, "fasteoi");
 	}
 
 	/*
@@ -182,7 +185,7 @@ static const struct msi_domain_template aplic_msi_template = {
 	.info = {
 		.bus_token		= DOMAIN_BUS_WIRED_TO_MSI,
 		.flags			= MSI_FLAG_USE_DEV_FWNODE,
-		.handler		= handle_fasteoi_irq,
+		.handler		= handle_fasteoi_ack_irq,
 		.handler_name		= "fasteoi",
 	},
 };
