@@ -22294,10 +22294,10 @@ F:	include/dt-bindings/reset/thead,th1520-reset.h
 F:	include/linux/firmware/thead/thead,th1520-aon.h
 
 RISC-V ULTRARISC SoC SUPPORT
-M:	Jia Wang <wangjia@ultrarisc.com>
+M:	Xincheng Ji <jixincheng@ultrarisc.com>
 L:	linux-riscv@lists.infradead.org
 S:	Supported
-T:	git https://github.com/ultrarisc/linux.git
+T:	git https://git.kernel.org/pub/scm/linux/kernel/git/conor/linux.git/
 F:	Documentation/devicetree/bindings/riscv/ultrarisc.yaml
 F:	arch/riscv/boot/dts/ultrarisc/
 
