@@ -841,6 +841,9 @@ static void ast_crtc_helper_atomic_enable(struct drm_crtc *crtc, struct drm_atom
 
 	ast_set_index_reg_mask(ast, AST_IO_VGACRI, 0x17, 0x7f, vgacr17);
 	ast_set_index_reg_mask(ast, AST_IO_VGACRI, 0xb6, 0xfc, vgacrb6);
+
+	/* Firmware or a previous kernel may have left the screen disabled. */
+	ast_set_index_reg_mask(ast, AST_IO_VGASRI, 0x01, (u8)~AST_IO_VGASR1_SD, 0x00);
 }
 
 static void ast_crtc_helper_atomic_disable(struct drm_crtc *crtc, struct drm_atomic_state *state)
