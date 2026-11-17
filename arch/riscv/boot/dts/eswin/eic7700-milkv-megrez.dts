@@ -19,6 +19,15 @@
 	chosen {
 		stdout-path = "serial0:115200n8";
 	};
+
+	vcc_1v8: vcc1v8 {
+		compatible = "regulator-fixed";
+		regulator-name = "vcc1v8";
+		regulator-always-on;
+		regulator-boot-on;
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <1800000>;
+	};
 };
 
 &osc {
@@ -26,6 +35,12 @@
 	clock-output-names = "osc_24m";
 };
 
+&pinctrl {
+	vrgmii-supply = <&vcc_1v8>;
+};
+
 &uart0 {
 	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&uart0_pins>;
 };
