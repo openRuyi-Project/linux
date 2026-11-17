@@ -237,4 +237,7 @@
 /* Generic type identifier for ports which type is not important to userspace. */
 #define PORT_GENERIC	(-1)
 
+/* ZF UART */
+#define PORT_ZF	124
+
 #endif /* _UAPILINUX_SERIAL_CORE_H */

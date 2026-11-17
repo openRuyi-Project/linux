@@ -23674,6 +23674,15 @@ T:	git https://git.kernel.org/pub/scm/linux/kernel/git/conor/linux.git/
 F:	Documentation/devicetree/bindings/riscv/ultrarisc.yaml
 F:	arch/riscv/boot/dts/ultrarisc/
 
+RISC-V ZF(ZhuFeng) SoC SUPPORT
+M: Liu Wenhong <liu.wenhong35@zte.com.cn>
+R: Liu Qingtao <liu.qingtao2@zte.com.cn>
+R: Ye Zhihao <ye.zhihao1@zte.com.cn>
+L: linux-riscv@lists.infradead.org
+S: Maintained
+F: Documentation/devicetree/bindings/serial/lprs,zf-uart.yaml
+F: drivers/tty/serial/zf_uart.c
+
 RNBD BLOCK DRIVERS
 M:	Md. Haris Iqbal <haris.iqbal@ionos.com>
 M:	Jack Wang <jinpu.wang@ionos.com>
