@@ -30,6 +30,14 @@
 	};
 };
 
+&cpu_opp_table {
+	opp-1600000000 {
+		opp-hz = /bits/ 64 <1600000000>;
+		opp-microvolt = <900000>;
+		clock-latency-ns = <70000>;
+	};
+};
+
 &osc {
 	clock-frequency = <24000000>;
 	clock-output-names = "osc_24m";
