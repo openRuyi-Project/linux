@@ -25,6 +25,11 @@
 		stdout-path = "serial0:115200n8";
 	};
 
+	pwm-fan {
+		compatible = "pwm-fan";
+		pwms = <&pwm0 0 100000 0>;
+	};
+
 	vcc_1v8: vcc1v8 {
 		compatible = "regulator-fixed";
 		regulator-name = "vcc1v8";
@@ -65,6 +70,13 @@
 &gpio94_pins {
 	input-disable;
 	bias-disable;
+};
+
+&fan_control {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&fan_tach_pins>;
+	pulses-per-revolution = <2>;
 };
 
 &gmac0 {
@@ -112,6 +124,12 @@
 
 &pcie {
 	status = "okay";
+};
+
+&pwm0 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&fan_pwm_pins>;
 };
 
 &sata {
