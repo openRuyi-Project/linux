@@ -152,6 +152,17 @@ config REALTEK_OTTO_TIMER
 	  RT8391, RTL8392, RTL8393 and RTL8396 and chips of the RTL930x series
 	  such as RTL9301, RTL9302 or RTL9303.
 
+config SPACEMIT_TIMER
+	bool "SpacemiT K1/K3 timer"
+	depends on ARCH_SPACEMIT || COMPILE_TEST
+	depends on OF && COMMON_CLK && RESET_CONTROLLER && HAS_IOMEM
+	default y if ARCH_SPACEMIT
+	help
+	  Enable the SoC timer clockevent device on SpacemiT K1 and K3.
+	  It provides a shared oneshot timer for tick broadcast, alongside
+	  the per-CPU RISC-V timer. The RISC-V clocksource continues to
+	  provide timekeeping.
+
 config SUN4I_TIMER
 	bool "Sun4i timer driver" if COMPILE_TEST
 	depends on HAS_IOMEM
