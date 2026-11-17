@@ -25778,6 +25778,12 @@ F:	Documentation/devicetree/bindings/phy/spacemit,k3-inno-dp-phy.yaml
 F:	drivers/gpu/drm/spacemit/
 F:	drivers/phy/spacemit/phy-k3-inno-dp.c
 
+SPACEMIT TIMER DRIVER
+M:	Troy Mitchell <troy.mitchell@linux.spacemit.com>
+S:	Maintained
+F:	Documentation/devicetree/bindings/timer/spacemit,k1-timer.yaml
+F:	drivers/clocksource/timer-spacemit.c
+
 SPANISH DOCUMENTATION
 M:	Carlos Bilbao <carlos.bilbao@kernel.org>
 R:	Avadhut Naik <avadhut.naik@amd.com>
