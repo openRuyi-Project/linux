@@ -110,6 +110,10 @@
 	};
 };
 
+&pcie {
+	status = "okay";
+};
+
 &sdhci_emmc {
 	status = "okay";
 };
