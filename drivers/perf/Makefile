@@ -38,3 +38,4 @@ obj-$(CONFIG_CXL_PMU) += cxl_pmu.o
 obj-$(CONFIG_NVIDIA_TEGRA410_CMEM_LATENCY_PMU) += nvidia_t410_cmem_latency_pmu.o
 obj-$(CONFIG_NVIDIA_TEGRA410_C2C_PMU) += nvidia_t410_c2c_pmu.o
 obj-$(CONFIG_LPRS_ZF_PCIE_PMU) += lprs_zf_pcie_pmu.o
+obj-$(CONFIG_LPRS_ZF_DDR_PMU) += lprs_zf_ddr_pmu.o
