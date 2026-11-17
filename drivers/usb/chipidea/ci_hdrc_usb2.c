@@ -18,10 +18,6 @@
 
 #include "ci.h"
 
-struct ci_hdrc_usb2_priv {
-	struct platform_device	*ci_pdev;
-};
-
 static const struct ci_hdrc_platform_data ci_default_pdata = {
 	.capoffset	= DEF_CAPOFFSET,
 	.flags		= CI_HDRC_DISABLE_STREAMING,
@@ -48,7 +44,7 @@ MODULE_DEVICE_TABLE(of, ci_hdrc_usb2_of_match);
 static int ci_hdrc_usb2_probe(struct platform_device *pdev)
 {
 	struct device *dev = &pdev->dev;
-	struct ci_hdrc_usb2_priv *priv;
+	struct platform_device *ci_pdev;
 	struct ci_hdrc_platform_data *ci_pdata = dev_get_platdata(dev);
 	const struct ci_hdrc_platform_data *data;
 	struct clk *clk;
@@ -66,10 +62,6 @@ static int ci_hdrc_usb2_probe(struct platform_device *pdev)
 		/* struct copy */
 		*ci_pdata = *data;
 
-	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
-	if (!priv)
-		return -ENOMEM;
-
 	clk = devm_clk_get_optional_enabled(dev, NULL);
 	if (IS_ERR(clk))
 		return dev_err_probe(dev, PTR_ERR(clk),
@@ -77,10 +69,10 @@ static int ci_hdrc_usb2_probe(struct platform_device *pdev)
 
 	ci_pdata->name = dev_name(dev);
 
-	priv->ci_pdev = ci_hdrc_add_device(dev, pdev->resource,
-					   pdev->num_resources, ci_pdata);
-	if (IS_ERR(priv->ci_pdev)) {
-		ret = PTR_ERR(priv->ci_pdev);
+	ci_pdev = ci_hdrc_add_device(dev, pdev->resource,
+				     pdev->num_resources, ci_pdata);
+	if (IS_ERR(ci_pdev)) {
+		ret = PTR_ERR(ci_pdev);
 		if (ret != -EPROBE_DEFER)
 			dev_err(dev,
 				"failed to register ci_hdrc platform device: %d\n",
@@ -88,7 +80,7 @@ static int ci_hdrc_usb2_probe(struct platform_device *pdev)
 		return ret;
 	}
 
-	platform_set_drvdata(pdev, priv);
+	platform_set_drvdata(pdev, ci_pdev);
 
 	pm_runtime_no_callbacks(dev);
 	pm_runtime_enable(dev);
@@ -98,10 +90,10 @@ static int ci_hdrc_usb2_probe(struct platform_device *pdev)
 
 static void ci_hdrc_usb2_remove(struct platform_device *pdev)
 {
-	struct ci_hdrc_usb2_priv *priv = platform_get_drvdata(pdev);
+	struct platform_device *ci_pdev = platform_get_drvdata(pdev);
 
 	pm_runtime_disable(&pdev->dev);
-	ci_hdrc_remove_device(priv->ci_pdev);
+	ci_hdrc_remove_device(ci_pdev);
 }
 
 static struct platform_driver ci_hdrc_usb2_driver = {
