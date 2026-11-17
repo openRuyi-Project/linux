@@ -67,6 +67,12 @@
 	bias-disable;
 };
 
+&fan_control {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&fan_tach_pins>;
+};
+
 &gmac0 {
 	phy-handle = <&gmac0_phy0>;
 	phy-mode = "rgmii-id";
@@ -112,6 +118,12 @@
 
 &pcie {
 	status = "okay";
+};
+
+&pwm0 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&fan_pwm_pins>;
 };
 
 &sata {
