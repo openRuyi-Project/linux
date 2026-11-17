@@ -138,3 +138,13 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&uart0_pins>;
 };
+
+&usb0 {
+	/* U143 routes USB0 to a host hub in Normal mode. */
+	dr_mode = "host";
+	status = "okay";
+};
+
+&usb1 {
+	status = "okay";
+};
