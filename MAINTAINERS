@@ -23676,12 +23676,17 @@ F:	arch/riscv/boot/dts/ultrarisc/
 
 RISC-V ZF(ZhuFeng) SoC SUPPORT
 M: Liu Wenhong <liu.wenhong35@zte.com.cn>
+M: Liu Fei <liu.fei16@zte.com.cn>
 R: Liu Qingtao <liu.qingtao2@zte.com.cn>
 R: Ye Zhihao <ye.zhihao1@zte.com.cn>
 L: linux-riscv@lists.infradead.org
 S: Maintained
 F: Documentation/devicetree/bindings/serial/lprs,zf-uart.yaml
+F: Documentation/devicetree/bindings/i2c/lprs,zf-i2c.yaml
 F: drivers/tty/serial/zf_uart.c
+F: drivers/i2c/busses/i2c-zf-core.h
+F: drivers/i2c/busses/i2c-zf-master.c
+F: drivers/i2c/busses/i2c-zf-platdrv.c
 
 RNBD BLOCK DRIVERS
 M:	Md. Haris Iqbal <haris.iqbal@ionos.com>
