@@ -1,0 +1,17 @@
+[
+    {
+        "EventName": "LL_CACHE_MISS_RD",
+        "EventCode": "0x00000104",
+        "BriefDescription": "Last level cache miss, read"
+    },
+    {
+        "EventName": "LL_CACHE_RD",
+        "EventCode": "0x00000204",
+        "BriefDescription": "Last level cache access, read"
+    },
+    {
+        "EventName": "EXT_DATSRC_CACHE_REFILL",
+        "EventCode": "0x00000404",
+        "BriefDescription": "External data source cache"
+    }
+]
