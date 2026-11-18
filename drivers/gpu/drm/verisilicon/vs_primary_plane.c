@@ -61,8 +61,8 @@ static void vs_primary_plane_commit(struct vs_dc *dc, unsigned int output)
 			VSDC_FB_CONFIG_EX_COMMIT);
 }
 
-static void vs_primary_plane_atomic_disable(struct drm_plane *plane,
-					    struct drm_atomic_commit *atomic_state)
+static void vs_primary_plane_disable(struct drm_plane *plane,
+				     struct drm_atomic_commit *atomic_state)
 {
 	struct drm_plane_state *state = drm_atomic_get_old_plane_state(atomic_state,
 								       plane);
@@ -98,7 +98,7 @@ static void vs_primary_plane_atomic_update(struct drm_plane *plane,
 	dma_addr_t dma_addr;
 
 	if (!state->visible) {
-		vs_primary_plane_atomic_disable(plane, atomic_state);
+		vs_primary_plane_disable(plane, atomic_state);
 		return;
 	}
 
@@ -150,7 +150,6 @@ static void vs_primary_plane_atomic_update(struct drm_plane *plane,
 static const struct drm_plane_helper_funcs vs_primary_plane_helper_funcs = {
 	.atomic_check	= vs_primary_plane_atomic_check,
 	.atomic_update	= vs_primary_plane_atomic_update,
-	.atomic_disable	= vs_primary_plane_atomic_disable,
 };
 
 static const struct drm_plane_funcs vs_primary_plane_funcs = {
