@@ -886,8 +886,11 @@ static bool __init is_vaddr_valid(unsigned long va)
  * The maximum SATP mode is limited by both the command line and the "mmu-type"
  * property in the device tree, since some platforms may hang if an unsupported
  * SATP mode is attempted.
+ *
+ * GCOV instrumentation must be disabled because the temporary identity
+ * mapping does not cover GCOV counters while probing SATP modes.
  */
-static __init void set_satp_mode(uintptr_t dtb_pa)
+static __init __no_profile void set_satp_mode(uintptr_t dtb_pa)
 {
 	u64 identity_satp, hw_satp;
 	uintptr_t set_satp_mode_pmd = ((unsigned long)set_satp_mode) & PMD_MASK;
