@@ -13,3 +13,4 @@ subdir-y += starfive
 subdir-y += tenstorrent
 subdir-y += thead
 subdir-y += ultrarisc
+subdir-y += zhihe
