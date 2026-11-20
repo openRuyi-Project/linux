@@ -409,4 +409,13 @@ config AXIADO_MAILBOX
 	  Axiado SoCs.
 	  If unsure, say N.
 
+config ZHIHE_A210_MBOX
+	bool "Zhihe A210 AP to E902 mailbox"
+	depends on OF && (ARCH_ZHIHE || COMPILE_TEST)
+	help
+	  Mailbox driver for the doorbells between the application
+	  processors and the E902 management core of the Zhihe A210. The
+	  doorbells carry no data, so clients pass their messages through
+	  shared memory. Say Y to use the SCMI firmware on the E902.
+
 endif
