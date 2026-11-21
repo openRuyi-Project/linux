@@ -11,6 +11,8 @@
 #include <linux/clk.h>
 #include <linux/clk-provider.h>
 #include <linux/io.h>
+#include <linux/of.h>
+#include <linux/of_clk.h>
 #include <linux/platform_device.h>
 #include <asm/div64.h>
 
@@ -840,6 +842,35 @@ static int sg2042_clk_register_divs(struct device *dev,
 	return ret;
 }
 
+static bool sg2042_clk_is_reserved(struct device_node *clkgen, unsigned int id)
+{
+	struct device_node *soc __free(device_node) = of_find_node_by_path("/soc");
+	struct device_node *node;
+
+	for_each_reserved_child_of_node(soc, node) {
+		unsigned int i, count = of_clk_get_parent_count(node);
+
+		for (i = 0; i < count; i++) {
+			struct of_phandle_args clkspec;
+			bool match;
+
+			if (of_parse_phandle_with_args(node, "clocks", "#clock-cells",
+						       i, &clkspec))
+				continue;
+
+			match = clkspec.np == clkgen && clkspec.args_count == 1 &&
+				clkspec.args[0] == id;
+			of_node_put(clkspec.np);
+			if (match) {
+				of_node_put(node);
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
 static int sg2042_clk_register_gates(struct device *dev,
 				     struct sg2042_clk_data *clk_data,
 				     const struct sg2042_gate_clock gate_clks[],
@@ -850,7 +881,12 @@ static int sg2042_clk_register_gates(struct device *dev,
 	int i, ret = 0;
 
 	for (i = 0; i < num_gate_clks; i++) {
+		unsigned long flags;
+
 		gate = &gate_clks[i];
+		flags = gate->hw.init->flags;
+		if (sg2042_clk_is_reserved(dev->of_node, gate->id))
+			flags |= CLK_IS_CRITICAL;
 		hw = __devm_clk_hw_register_gate
 			(dev,
 			 NULL,
@@ -858,7 +894,7 @@ static int sg2042_clk_register_gates(struct device *dev,
 			 NULL,
 			 gate->hw.init->parent_hws[0],
 			 NULL,
-			 gate->hw.init->flags,
+			 flags,
 			 clk_data->iobase + gate->offset_enable,
 			 gate->bit_idx,
 			 0,
