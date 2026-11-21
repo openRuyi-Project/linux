@@ -840,6 +840,18 @@ static int sg2042_clk_register_divs(struct device *dev,
 	return ret;
 }
 
+static unsigned long sg2042_gate_flags(struct device *dev,
+				       const struct sg2042_gate_clock *gate)
+{
+	u32 id;
+
+	of_property_for_each_u32(dev->of_node, "protected-clocks", id)
+		if (id == gate->id)
+			return gate->hw.init->flags | CLK_IS_CRITICAL;
+
+	return gate->hw.init->flags;
+}
+
 static int sg2042_clk_register_gates(struct device *dev,
 				     struct sg2042_clk_data *clk_data,
 				     const struct sg2042_gate_clock gate_clks[],
@@ -858,7 +870,7 @@ static int sg2042_clk_register_gates(struct device *dev,
 			 NULL,
 			 gate->hw.init->parent_hws[0],
 			 NULL,
-			 gate->hw.init->flags,
+			 sg2042_gate_flags(dev, gate),
 			 clk_data->iobase + gate->offset_enable,
 			 gate->bit_idx,
 			 0,
@@ -900,7 +912,7 @@ static int sg2042_clk_register_gates_fw(struct device *dev,
 			(dev,
 			 gate->hw.init->name,
 			 gate->hw.init->parent_data,
-			 gate->hw.init->flags,
+			 sg2042_gate_flags(dev, gate),
 			 clk_data->iobase + gate->offset_enable,
 			 gate->bit_idx,
 			 0,
