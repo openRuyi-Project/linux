@@ -29,7 +29,7 @@ static void sbi_dbcn_console_write(struct console *con,
 
 	while (n) {
 		ret = sbi_debug_console_write(s, n);
-		if (ret < 0)
+		if (ret <= 0)
 			break;
 
 		s += ret;
