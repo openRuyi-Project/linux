@@ -938,7 +938,10 @@ static int dw_pcie_iatu_setup(struct dw_pcie_rp *pp)
 			}
 
 			atu.index = i;
-			atu.size = MIN(pci->region_limit + 1, res_size);
+			/* Don't cross a region_limit boundary */
+			atu.size = MIN(pci->region_limit + 1 -
+				       (atu.parent_bus_addr & pci->region_limit),
+				       res_size);
 
 			ret = dw_pcie_prog_outbound_atu(pci, &atu);
 			if (ret) {
@@ -1008,7 +1011,11 @@ static int dw_pcie_iatu_setup(struct dw_pcie_rp *pp)
 				return -ENOMEM;
 			}
 
-			window_size = MIN(pci->region_limit + 1, res_size);
+			/* Don't cross a region_limit boundary */
+			window_size = MIN(pci->region_limit + 1 -
+					  ((res_start - entry->offset) &
+					   pci->region_limit),
+					  res_size);
 			ret = dw_pcie_prog_inbound_atu(pci, i++, PCIE_ATU_TYPE_MEM, res_start,
 						       res_start - entry->offset, window_size);
 			if (ret) {
