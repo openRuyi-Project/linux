@@ -101,7 +101,7 @@
 		compatible = "atmel,24c08";
 		reg = <0x54>;
 		vcc-supply = <&buck3_1v8>;
-		pagesize = <16>;
+		pagesize = <8>;
 		size = <1024>;
 	};
 };
