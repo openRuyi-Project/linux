@@ -208,7 +208,7 @@
 		compatible = "atmel,24c02";
 		reg = <0x50>;
 		vcc-supply = <&buck3_1v8>; /* EEPROM_VCC1V8 */
-		pagesize = <16>;
+		pagesize = <8>;
 		read-only;
 		size = <256>;
 
