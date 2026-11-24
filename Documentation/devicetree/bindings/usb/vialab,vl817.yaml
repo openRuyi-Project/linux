@@ -40,7 +40,7 @@ required:
   - vdd-supply
   - peer-hub
 
-additionalProperties: false
+unevaluatedProperties: false
 
 examples:
   - |
