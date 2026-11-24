@@ -10,7 +10,7 @@ maintainers:
   - Anand Moon <linux.amoon@gmail.com>
 
 allOf:
-  - $ref: usb-device.yaml#
+  - $ref: usb-hub.yaml#
 
 properties:
   compatible:
