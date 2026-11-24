@@ -18,8 +18,6 @@ properties:
       - usb2109,2817
       - usb2109,817
 
-  reg: true
-
   reset-gpios:
     maxItems: 1
     description:
@@ -28,11 +26,6 @@ properties:
   vdd-supply:
     description:
       phandle to the regulator that provides power to the hub.
-
-  peer-hub:
-    $ref: /schemas/types.yaml#/definitions/phandle
-    description:
-      phandle to the peer hub on the controller.
 
 required:
   - compatible
