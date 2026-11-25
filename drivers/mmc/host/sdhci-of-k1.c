@@ -98,6 +98,7 @@ struct spacemit_sdhci_host {
 	struct pinctrl *pinctrl;
 	struct pinctrl_state *pinctrl_default;
 	struct pinctrl_state *pinctrl_uhs;
+	u8 tx_delaycode;
 };
 
 /* All helper functions will update clr/set while preserve rest bits */
@@ -299,12 +300,15 @@ static int spacemit_sdhci_execute_tuning(struct sdhci_host *host, u32 opcode)
 		return 0;
 
 	if (mmc->caps2 & MMC_CAP2_NO_MMC) {
+		struct spacemit_sdhci_host *sdhst;
+
+		sdhst = sdhci_pltfm_priv(sdhci_priv(host));
 		spacemit_sdhci_set_tx_dline_reg(host, SPACEMIT_TX_TUNING_DLINE_REG);
-		spacemit_sdhci_set_tx_delay(host, SPACEMIT_TX_TUNING_DELAYCODE);
+		spacemit_sdhci_set_tx_delay(host, sdhst->tx_delaycode);
 		spacemit_sdhci_tx_tuning_prepare(host);
 
 		dev_dbg(mmc_dev(host->mmc), "TX tuning: dline_reg=%d, delaycode=%d\n",
-			SPACEMIT_TX_TUNING_DLINE_REG, SPACEMIT_TX_TUNING_DELAYCODE);
+			SPACEMIT_TX_TUNING_DLINE_REG, sdhst->tx_delaycode);
 	}
 
 	spacemit_sdhci_prepare_tuning(host);
@@ -513,6 +517,17 @@ static inline void spacemit_sdhci_get_pins(struct device *dev,
 		sdhst->pinctrl_default, sdhst->pinctrl_uhs);
 }
 
+static void spacemit_sdhci_get_tuning_params(struct device *dev,
+					     struct sdhci_pltfm_host *pltfm_host)
+{
+	struct spacemit_sdhci_host *sdhst = sdhci_pltfm_priv(pltfm_host);
+
+	sdhst->tx_delaycode = SPACEMIT_TX_TUNING_DELAYCODE;
+
+	/* Override if valid from DT property */
+	device_property_read_u8(dev, "spacemit,tx-delay", &sdhst->tx_delaycode);
+}
+
 static int spacemit_sdhci_card_busy(struct mmc_host *mmc)
 {
 	struct sdhci_host *host = mmc_priv(mmc);
@@ -607,6 +622,8 @@ static int spacemit_sdhci_probe(struct platform_device *pdev)
 	host->mmc->caps |= MMC_CAP_NEED_RSP_BUSY;
 
 	spacemit_sdhci_get_pins(dev, pltfm_host);
+
+	spacemit_sdhci_get_tuning_params(dev, pltfm_host);
 
 	host->mmc_host_ops.start_signal_voltage_switch = spacemit_sdhci_start_signal_voltage_switch;
 
