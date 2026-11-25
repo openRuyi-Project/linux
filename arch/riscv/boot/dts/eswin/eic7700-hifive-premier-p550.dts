@@ -50,6 +50,36 @@
 		regulator-min-microvolt = <1800000>;
 		regulator-max-microvolt = <1800000>;
 	};
+
+	vdd_cpu: regulator-vdd-cpu {
+		compatible = "regulator-gpio";
+		regulator-name = "VDD_CPU";
+		regulator-min-microvolt = <800000>;
+		regulator-max-microvolt = <900000>;
+		regulator-boot-on;
+		regulator-always-on;
+		pinctrl-names = "default";
+		pinctrl-0 = <&gpio94_pins>;
+		gpios = <&gpioC 30 GPIO_ACTIVE_HIGH>;
+		gpios-states = <1>;
+		states = <800000 0>, <900000 1>;
+	};
+};
+
+&cpu0 {
+	cpu-supply = <&vdd_cpu>;
+};
+
+&cpu1 {
+	cpu-supply = <&vdd_cpu>;
+};
+
+&cpu2 {
+	cpu-supply = <&vdd_cpu>;
+};
+
+&cpu3 {
+	cpu-supply = <&vdd_cpu>;
 };
 
 &aon_i2c0 {
