@@ -25,6 +25,11 @@ properties:
               - pine64,starpro64
               - sifive,hifive-premier-p550
           - const: eswin,eic7700
+      - items:
+          - enum:
+              - eswin,eic7702-d560
+              - eswin,eic7702-som560
+          - const: eswin,eic7702
 
 additionalProperties: true
 
