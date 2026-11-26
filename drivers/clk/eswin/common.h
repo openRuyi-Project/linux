@@ -34,8 +34,20 @@ struct eswin_clock_data {
 	struct clk_hw *original_clk;
 	struct notifier_block pll_nb;
 	spinlock_t lock; /* protect register read-modify-write cycle */
+	unsigned int die;
 	struct clk_hw_onecell_data clk_data;
 };
+
+/* Die 0 keeps the clock names used on single-die boards. */
+static inline const char *eswin_clk_name(struct device *dev,
+					 const struct eswin_clock_data *data,
+					 const char *name)
+{
+	if (!data->die)
+		return name;
+
+	return devm_kasprintf(dev, GFP_KERNEL, "d%u_%s", data->die, name);
+}
 
 struct eswin_divider_clock {
 	struct clk_hw hw;
