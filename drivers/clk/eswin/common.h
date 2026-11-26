@@ -85,7 +85,7 @@ struct eswin_mux_clock {
 	struct clk_hw hw;
 	unsigned int id;
 	const char *name;
-	const struct clk_parent_data *parent_data;
+	const unsigned int *parent_ids;
 	u8 num_parents;
 	unsigned long flags;
 	unsigned long reg;
@@ -151,19 +151,19 @@ struct eswin_clk_info {
 struct eswin_clock_data *eswin_clk_init(struct platform_device *pdev,
 					size_t nr_clks);
 int eswin_clk_register_fixed_rate(struct device *dev,
-				  struct eswin_fixed_rate_clock *clks,
+				  const struct eswin_fixed_rate_clock *clks,
 				  int nums, struct eswin_clock_data *data);
 int eswin_clk_register_pll(struct device *dev, struct eswin_pll_clock *clks,
 			   int nums, struct eswin_clock_data *data);
 int eswin_clk_register_fixed_factor(struct device *dev,
-				    struct eswin_fixed_factor_clock *clks,
+				    const struct eswin_fixed_factor_clock *clks,
 				    int nums, struct eswin_clock_data *data);
-int eswin_clk_register_mux(struct device *dev, struct eswin_mux_clock *clks,
+int eswin_clk_register_mux(struct device *dev, const struct eswin_mux_clock *clks,
 			   int nums, struct eswin_clock_data *data);
 int eswin_clk_register_divider(struct device *dev,
-			       struct eswin_divider_clock *clks,
+			       const struct eswin_divider_clock *clks,
 			       int nums, struct eswin_clock_data *data);
-int eswin_clk_register_gate(struct device *dev, struct eswin_gate_clock *clks,
+int eswin_clk_register_gate(struct device *dev, const struct eswin_gate_clock *clks,
 			    int nums, struct eswin_clock_data *data);
 int eswin_clk_register_clks(struct device *dev, struct eswin_clk_info *clks,
 			    int nums, struct eswin_clock_data *data);
@@ -268,12 +268,12 @@ struct clk_hw *eswin_register_clkdiv(struct device *dev, unsigned int id,
 		},							\
 	}
 
-#define ESWIN_MUX(_id, _name, _pdata, _num_parents, _flags, _reg,	\
+#define ESWIN_MUX(_id, _name, _pids, _num_parents, _flags, _reg,	\
 		  _shift, _width, _mflags)				\
 	{								\
 		.id		= _id,					\
 		.name		= _name,				\
-		.parent_data	= _pdata,				\
+		.parent_ids	= _pids,				\
 		.num_parents	= _num_parents,				\
 		.flags		= _flags,				\
 		.reg		= _reg,					\
@@ -283,30 +283,15 @@ struct clk_hw *eswin_register_clkdiv(struct device *dev, unsigned int id,
 		.table		= NULL,					\
 	}
 
-#define ESWIN_MUX_TBL(_id, _name, _pdata, _num_parents, _flags, _reg,	\
-		      _shift, _width, _mflags, _table)			\
-	{								\
-		.id		= _id,					\
-		.name		= _name,				\
-		.parent_data	= _pdata,				\
-		.num_parents	= _num_parents,				\
-		.flags		= _flags,				\
-		.reg		= _reg,					\
-		.shift		= _shift,				\
-		.width		= _width,				\
-		.mux_flags	= _mflags,				\
-		.table		= _table,				\
-	}
-
-#define ESWIN_MUX_TYPE(_id, _name, _pdata, _num_parents, _flags, _reg,	\
+#define ESWIN_MUX_TYPE(_id, _name, _pids, _num_parents, _flags, _reg,	\
 		       _shift, _width, _mflags, _table)			\
 	{								\
 		.type	= CLK_MUX,					\
 		.id	= _id,						\
 		.data	= {						\
 				.mux = {				\
-					.name	= _name,		\
-					.parent_data	= _pdata,	\
+					.name		= _name,	\
+					.parent_ids	= _pids,	\
 					.num_parents	= _num_parents,	\
 					.flags		= _flags,	\
 					.reg		= _reg,		\
