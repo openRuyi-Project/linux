@@ -254,6 +254,7 @@ static int eic7700_hsp_clk_probe(struct platform_device *pdev)
 	struct eswin_clock_data *data;
 	struct regmap *regmap;
 	struct clk_hw *hw;
+	const char *name;
 	int i, ret;
 
 	data = eswin_clk_init(pdev, EIC7700_HSP_NR_CLKS);
@@ -289,7 +290,11 @@ static int eic7700_hsp_clk_probe(struct platform_device *pdev)
 	for (i = 0; i < ARRAY_SIZE(eic7700_hsp_spec_gate_clks); i++) {
 		const struct eic7700_hsp_clk_gate *gate = &eic7700_hsp_spec_gate_clks[i];
 
-		hw = hsp_clk_register_gate(dev, gate->id, gate->name,
+		name = eswin_clk_name(dev, data, gate->name);
+		if (!name)
+			return -ENOMEM;
+
+		hw = hsp_clk_register_gate(dev, gate->id, name,
 					   gate->parent_data, gate->flags,
 					   regmap, gate->offset,
 					   gate->ref_offset, gate->bit_idx);
@@ -305,7 +310,8 @@ static int eic7700_hsp_clk_probe(struct platform_device *pdev)
 	if (ret)
 		return dev_err_probe(dev, ret, "add clk provider failed\n");
 
-	adev = devm_auxiliary_device_create(dev, "hsp-reset", NULL);
+	adev = __devm_auxiliary_device_create(dev, KBUILD_MODNAME, "hsp-reset",
+					      NULL, data->die);
 	if (!adev)
 		return dev_err_probe(dev, -ENODEV,
 				     "register hsp-reset device failed\n");
