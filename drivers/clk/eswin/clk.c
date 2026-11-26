@@ -37,7 +37,7 @@ struct eswin_clock_data *eswin_clk_init(struct platform_device *pdev,
 
 	eclk_data->base = devm_platform_ioremap_resource(pdev, 0);
 	if (IS_ERR(eclk_data->base))
-		return ERR_PTR(-EINVAL);
+		return ERR_CAST(eclk_data->base);
 
 	eclk_data->clk_data.num = nr_clks;
 	spin_lock_init(&eclk_data->lock);
