@@ -1,0 +1,348 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * ESWIN SOM560 module
+ * Copyright (c) 2026 Beijing ESWIN Computing Technology Co., Ltd.
+ */
+
+#include "eic7702.dtsi"
+#include "eic7702-pinctrl.dtsi"
+#include <dt-bindings/gpio/gpio.h>
+
+/ {
+	compatible = "eswin,eic7702-som560", "eswin,eic7702";
+
+	aliases {
+		serial0 = &d0_uart0;
+		ethernet0 = &d0_gmac0;
+		ethernet1 = &d0_gmac1;
+		ethernet2 = &d1_gmac0;
+		ethernet3 = &d1_gmac1;
+		mmc0 = &d0_sdhci_emmc;
+	};
+
+	memory@80000000 {
+		device_type = "memory";
+		reg = <0x0 0x80000000 0x0 0x40000000>;
+		numa-node-id = <0>;
+	};
+
+	memory@2000000000 {
+		device_type = "memory";
+		reg = <0x20 0x00000000 0x0 0x40000000>;
+		numa-node-id = <1>;
+	};
+
+	/* Both logical NUMA ranges here stripe across both memory controllers.
+	 * The first 2 GiB of this view aliases the direct banks above.
+	 */
+	memory@4080000000 {
+		device_type = "memory";
+		reg = <0x40 0x80000000 0x3 0xc0000000>;
+		numa-node-id = <0>;
+	};
+
+	memory@4440000000 {
+		device_type = "memory";
+		reg = <0x44 0x40000000 0x3 0xc0000000>;
+		numa-node-id = <1>;
+	};
+
+	distance-map {
+		compatible = "numa-distance-map-v1";
+		distance-matrix = <0 0 10>,
+				<0 1 100>,
+				<1 0 100>,
+				<1 1 10>;
+	};
+
+	reserved-memory {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+
+		/*
+		 * Firmware uses the direct DDR ranges noted below, which also
+		 * appear in the striped window. A Linux page there holds 256-byte
+		 * stripes from both dies, so a direct range of size S on one die
+		 * is excluded as an aligned 2 * S striped range.
+		 */
+
+		/* Die 1 L3 zero-device buffer, see d1_zero_memory */
+		reserved@4080000000 {
+			reg = <0x40 0x80000000 0x0 0x00800000>;
+			no-map;
+		};
+
+		/* LPCPU boot vectors at 0xdffe0000 and 0xdfff0000 */
+		reserved@40bffc0000 {
+			reg = <0x40 0xbffc0000 0x0 0x00040000>;
+			no-map;
+		};
+
+		/* Die 0 LPCPU firmware at 0x1fe000000, 32 MiB */
+		reserved@42fc000000 {
+			reg = <0x42 0xfc000000 0x0 0x04000000>;
+			no-map;
+		};
+
+		/* Die 1 LPCPU firmware at 0x21fe000000, 32 MiB */
+		reserved@43fc000000 {
+			reg = <0x43 0xfc000000 0x0 0x04000000>;
+			no-map;
+		};
+
+		/* The vendor cache driver emulates the die 1 L3 zero device here. */
+		d1_zero_memory: zero-device@2040000000 {
+			no-map;
+			reg = <0x20 0x40000000 0x0 0x400000>;
+		};
+	};
+
+	d0_cpu_opps: opp-table-cluster0 {
+		compatible = "operating-points-v2";
+		opp-shared;
+#include "eic7702-eswin-som560-cpu-opps.dtsi"
+	};
+
+	d1_cpu_opps: opp-table-cluster1 {
+		compatible = "operating-points-v2";
+		opp-shared;
+#include "eic7702-eswin-som560-cpu-opps.dtsi"
+	};
+
+	vdd_cpu: regulator-vdd-cpu {
+		compatible = "regulator-gpio";
+		regulator-name = "VDD_CPU";
+		/* Keep the shared rail at the boot voltage during CPUFreq handoff. */
+		regulator-min-microvolt = <900000>;
+		regulator-max-microvolt = <900000>;
+		regulator-boot-on;
+		regulator-always-on;
+		pinctrl-names = "default";
+		pinctrl-0 = <&d0_gpio94_pins>;
+		gpios = <&d0_gpioC 30 GPIO_ACTIVE_HIGH>;
+		gpios-states = <1>;
+		states = <800000 0>, <900000 1>;
+	};
+
+	vcc_1v8: regulator-1v8 {
+		compatible = "regulator-fixed";
+		regulator-name = "1v8";
+		regulator-always-on;
+		regulator-boot-on;
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <1800000>;
+	};
+};
+
+&cpu0 {
+	cpu-supply = <&vdd_cpu>;
+	operating-points-v2 = <&d0_cpu_opps>;
+};
+
+&cpu1 {
+	cpu-supply = <&vdd_cpu>;
+	operating-points-v2 = <&d0_cpu_opps>;
+};
+
+&cpu2 {
+	cpu-supply = <&vdd_cpu>;
+	operating-points-v2 = <&d0_cpu_opps>;
+};
+
+&cpu3 {
+	cpu-supply = <&vdd_cpu>;
+	operating-points-v2 = <&d0_cpu_opps>;
+};
+
+&cpu4 {
+	cpu-supply = <&vdd_cpu>;
+	operating-points-v2 = <&d1_cpu_opps>;
+};
+
+&cpu5 {
+	cpu-supply = <&vdd_cpu>;
+	operating-points-v2 = <&d1_cpu_opps>;
+};
+
+&cpu6 {
+	cpu-supply = <&vdd_cpu>;
+	operating-points-v2 = <&d1_cpu_opps>;
+};
+
+&cpu7 {
+	cpu-supply = <&vdd_cpu>;
+	operating-points-v2 = <&d1_cpu_opps>;
+};
+
+&d0_aon_i2c0 {
+	status = "disabled";
+};
+
+&d0_aon_i2c1 {
+	status = "okay";
+	tmp102@48 {
+		compatible = "ti,tmp102";
+		reg = <0x48>;
+		label = "board_tmp";
+		#thermal-sensor-cells = <1>;
+	};
+
+};
+
+&d0_clock_24m {
+	clock-frequency = <24000000>;
+	clock-output-names = "d0_clock_24m";
+};
+
+&d0_gmac0 {
+	phy-handle = <&d0_gmac0_phy0>;
+	phy-mode = "rgmii-id";
+	pinctrl-names = "default";
+	pinctrl-0 = <&d0_gpio29_pins>;
+	rx-internal-delay-ps = <20>;
+	tx-internal-delay-ps = <20>;
+	status = "okay";
+
+	mdio {
+		d0_gmac0_phy0: ethernet-phy@0 {
+			compatible = "ethernet-phy-id001c.c916";
+			reg = <0>;
+			reset-gpios = <&d0_gpioA 29 GPIO_ACTIVE_LOW>;
+			reset-assert-us = <10000>;
+			reset-deassert-us = <80000>;
+		};
+	};
+};
+
+&d0_gmac1 {
+	phy-handle = <&d0_gmac1_phy0>;
+	phy-mode = "rgmii-id";
+	pinctrl-names = "default";
+	pinctrl-0 = <&d0_gpio34_pins>;
+	rx-internal-delay-ps = <200>;
+	tx-internal-delay-ps = <2100>;
+	status = "okay";
+
+	mdio {
+		d0_gmac1_phy0: ethernet-phy@0 {
+			compatible = "ethernet-phy-id001c.c916";
+			reg = <0>;
+			reset-gpios = <&d0_gpioB 2 GPIO_ACTIVE_LOW>;
+			reset-assert-us = <10000>;
+			reset-deassert-us = <80000>;
+		};
+	};
+};
+
+&d0_gpio {
+	status = "okay";
+};
+
+&d0_gpio29_pins {
+	input-disable;
+	bias-pull-up;
+};
+
+&d0_gpio34_pins {
+	input-disable;
+	bias-pull-up;
+};
+
+&d0_pinctrl {
+	status = "okay";
+	vrgmii-supply = <&vcc_1v8>;
+};
+
+&d0_reset {
+	status = "okay";
+};
+
+&d0_sdhci_emmc {
+	eswin,drive-impedance-ohms = <33>;
+	mmc-hs400-1_8v;
+	no-sd;
+	no-sdio;
+	non-removable;
+	status = "okay";
+};
+
+&d1_aon_i2c0 {
+	status = "disabled";
+};
+
+&d1_aon_i2c1 {
+	status = "okay";
+};
+
+&d1_ccache {
+	status = "okay";
+};
+
+&d1_clock_24m {
+	clock-frequency = <24000000>;
+	clock-output-names = "d1_clock_24m";
+};
+
+&d1_gmac0 {
+	phy-handle = <&d1_gmac0_phy0>;
+	phy-mode = "rgmii-id";
+	pinctrl-names = "default";
+	pinctrl-0 = <&d1_gpio29_pins>;
+	rx-internal-delay-ps = <20>;
+	tx-internal-delay-ps = <20>;
+	status = "okay";
+
+	mdio {
+		d1_gmac0_phy0: ethernet-phy@0 {
+			compatible = "ethernet-phy-id001c.c916";
+			reg = <0>;
+			reset-gpios = <&d1_gpioA 29 GPIO_ACTIVE_LOW>;
+			reset-assert-us = <10000>;
+			reset-deassert-us = <80000>;
+		};
+	};
+};
+
+&d1_gmac1 {
+	phy-handle = <&d1_gmac1_phy0>;
+	phy-mode = "rgmii-id";
+	pinctrl-names = "default";
+	pinctrl-0 = <&d1_gpio34_pins>;
+	rx-internal-delay-ps = <200>;
+	tx-internal-delay-ps = <2100>;
+	status = "okay";
+
+	mdio {
+		d1_gmac1_phy0: ethernet-phy@0 {
+			compatible = "ethernet-phy-id001c.c916";
+			reg = <0>;
+			reset-gpios = <&d1_gpioB 2 GPIO_ACTIVE_LOW>;
+			reset-assert-us = <10000>;
+			reset-deassert-us = <80000>;
+		};
+	};
+};
+
+&d1_gpio {
+	status = "okay";
+};
+
+&d1_gpio29_pins {
+	input-disable;
+	bias-pull-up;
+};
+
+&d1_gpio34_pins {
+	input-disable;
+	bias-pull-up;
+};
+
+&d1_pinctrl {
+	status = "okay";
+	vrgmii-supply = <&vcc_1v8>;
+};
+
+&d1_reset {
+	status = "okay";
+};
