@@ -1,0 +1,185 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * ESWIN D560 carrier with the SOM560 module
+ * Copyright (c) 2026 Beijing ESWIN Computing Technology Co., Ltd.
+ */
+
+/dts-v1/;
+
+#include "eic7702-eswin-som560.dtsi"
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/pwm/pwm.h>
+
+/ {
+	model = "ESWIN EIC7702 D560";
+	compatible = "eswin,eic7702-d560", "eswin,eic7702";
+
+	chosen {
+		stdout-path = "serial0:115200n8";
+	};
+
+	pwm-fan {
+		compatible = "pwm-fan";
+		fan-supply = <&cpu_fan_12v>;
+		/* Q24 pulls J15 pin 4 low when D0 FAN_PWM is high. */
+		pwms = <&d0_pwm 0 40000 PWM_POLARITY_INVERTED>;
+		fan-shutdown-percent = <100>;
+	};
+
+	cpu_fan_12v: regulator-cpu-fan {
+		compatible = "regulator-fixed";
+		regulator-name = "cpu-fan-12v";
+		regulator-min-microvolt = <12000000>;
+		regulator-max-microvolt = <12000000>;
+		regulator-boot-on;
+		regulator-always-on;
+		pinctrl-names = "default";
+		pinctrl-0 = <&d0_gpio18_pins>;
+		gpio = <&d0_gpioA 18 GPIO_ACTIVE_LOW>;
+	};
+
+	leds {
+		compatible = "gpio-leds";
+		pinctrl-names = "default";
+		pinctrl-0 = <&d0_gpio111_pins>;
+
+		led-0 {
+			gpios = <&d0_gpioD 15 GPIO_ACTIVE_LOW>;
+			label = "heartbeat";
+			linux,default-trigger = "heartbeat";
+		};
+	};
+};
+
+&d0_fan_tach {
+	pinctrl-names = "default";
+	pinctrl-0 = <&d0_fan_tach_pins>;
+	pulses-per-revolution = <2>;
+	status = "okay";
+};
+
+&d0_pcie {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&d1_gpio21_pins>;
+};
+
+&d0_gpio111_pins {
+	input-disable;
+	bias-disable;
+};
+
+&d0_gpio18_pins {
+	input-disable;
+	bias-disable;
+};
+
+&d0_pinctrl {
+	pinctrl-names = "default";
+	pinctrl-0 = <&d0_gpio6_pins &d0_gpio12_pins &d0_gpio39_pins
+				&d0_gpio40_pins &d0_gpio41_pins &d0_gpio46_pins
+				&d0_gpio47_pins &d0_gpio73_pins &d0_gpio74_pins
+				&d0_gpio75_pins &d0_gpio81_pins>;
+};
+
+&d0_pwm {
+	pinctrl-names = "default";
+	pinctrl-0 = <&d0_fan_pwm_pins>;
+	status = "okay";
+};
+
+&d0_sata {
+	status = "okay";
+};
+
+&d0_sdio0 {
+	eswin,drive-impedance-ohms = <33>;
+	disable-wp;
+	no-mmc;
+	no-sdio;
+	status = "okay";
+};
+
+&d0_uart0 {
+	/* debug */
+	status = "okay";
+};
+
+&d0_uart2 {
+	/* connect mcu */
+	status = "okay";
+};
+
+&d0_uart3 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&d0_uart3_pins>;
+	status = "okay";
+};
+
+&d0_usb0 {
+	wakeup-source;
+	snps,dis_enblslpm_quirk;
+	snps,dis-u2-freeclk-exists-quirk;
+	snps,dis_u2_susphy_quirk;
+	snps,dis-del-phy-power-chg-quirk;
+	snps,parkmode-disable-ss-quirk;
+	status = "okay";
+};
+
+&d0_usb1 {
+	wakeup-source;
+	snps,dis_enblslpm_quirk;
+	snps,dis-u2-freeclk-exists-quirk;
+	snps,dis_u2_susphy_quirk;
+	snps,dis-del-phy-power-chg-quirk;
+	snps,parkmode-disable-ss-quirk;
+	status = "okay";
+};
+
+&d1_pcie {
+	status = "okay";
+};
+
+&d1_pinctrl {
+	pinctrl-names = "default";
+	pinctrl-0 = <&d1_gpio36_pins &d1_gpio39_pins
+				&d1_gpio92_pins &d1_gpio93_pins
+				&d1_gpio18_pins>;
+};
+
+&d1_sata {
+	status = "okay";
+};
+
+&d1_sdio0 {
+	eswin,drive-impedance-ohms = <33>;
+	no-mmc;
+	no-sd;
+	non-removable;
+	status = "okay";
+};
+
+&d1_uart1 {
+	/* BT M.2 KEY-E */
+	status = "okay";
+};
+
+&d1_usb0 {
+	wakeup-source;
+	snps,dis_enblslpm_quirk;
+	snps,dis-u2-freeclk-exists-quirk;
+	snps,dis_u2_susphy_quirk;
+	snps,dis-del-phy-power-chg-quirk;
+	snps,parkmode-disable-ss-quirk;
+	status = "okay";
+};
+
+&d1_usb1 {
+	wakeup-source;
+	snps,dis_enblslpm_quirk;
+	snps,dis-u2-freeclk-exists-quirk;
+	snps,dis_u2_susphy_quirk;
+	snps,dis-del-phy-power-chg-quirk;
+	snps,parkmode-disable-ss-quirk;
+	status = "okay";
+};
