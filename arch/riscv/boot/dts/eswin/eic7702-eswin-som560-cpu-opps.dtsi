@@ -1,0 +1,99 @@
+// SPDX-License-Identifier: (GPL-2.0-only OR MIT)
+
+/* Both CPU clusters draw from VDD_CPU. A lower OPP also permits 0.9 V. */
+
+opp-24000000 {
+	opp-hz = /bits/ 64 <24000000>;
+	opp-microvolt = <800000 800000 900000>;
+	clock-latency-ns = <70000>;
+};
+
+opp-100000000 {
+	opp-hz = /bits/ 64 <100000000>;
+	opp-microvolt = <800000 800000 900000>;
+	clock-latency-ns = <70000>;
+};
+
+opp-200000000 {
+	opp-hz = /bits/ 64 <200000000>;
+	opp-microvolt = <800000 800000 900000>;
+	clock-latency-ns = <70000>;
+};
+
+opp-400000000 {
+	opp-hz = /bits/ 64 <400000000>;
+	opp-microvolt = <800000 800000 900000>;
+	clock-latency-ns = <70000>;
+};
+
+opp-500000000 {
+	opp-hz = /bits/ 64 <500000000>;
+	opp-microvolt = <800000 800000 900000>;
+	clock-latency-ns = <70000>;
+};
+
+opp-600000000 {
+	opp-hz = /bits/ 64 <600000000>;
+	opp-microvolt = <800000 800000 900000>;
+	clock-latency-ns = <70000>;
+};
+
+opp-700000000 {
+	opp-hz = /bits/ 64 <700000000>;
+	opp-microvolt = <800000 800000 900000>;
+	clock-latency-ns = <70000>;
+};
+
+opp-800000000 {
+	opp-hz = /bits/ 64 <800000000>;
+	opp-microvolt = <800000 800000 900000>;
+	clock-latency-ns = <70000>;
+};
+
+opp-900000000 {
+	opp-hz = /bits/ 64 <900000000>;
+	opp-microvolt = <800000 800000 900000>;
+	clock-latency-ns = <70000>;
+};
+
+opp-1000000000 {
+	opp-hz = /bits/ 64 <1000000000>;
+	opp-microvolt = <800000 800000 900000>;
+	clock-latency-ns = <70000>;
+};
+
+opp-1200000000 {
+	opp-hz = /bits/ 64 <1200000000>;
+	opp-microvolt = <800000 800000 900000>;
+	clock-latency-ns = <70000>;
+};
+
+opp-1300000000 {
+	opp-hz = /bits/ 64 <1300000000>;
+	opp-microvolt = <800000 800000 900000>;
+	clock-latency-ns = <70000>;
+};
+
+opp-1400000000 {
+	opp-hz = /bits/ 64 <1400000000>;
+	opp-microvolt = <800000 800000 900000>;
+	clock-latency-ns = <70000>;
+};
+
+opp-1500000000 {
+	opp-hz = /bits/ 64 <1500000000>;
+	opp-microvolt = <900000>;
+	clock-latency-ns = <70000>;
+};
+
+opp-1600000000 {
+	opp-hz = /bits/ 64 <1600000000>;
+	opp-microvolt = <900000>;
+	clock-latency-ns = <70000>;
+};
+
+opp-1800000000 {
+	opp-hz = /bits/ 64 <1800000000>;
+	opp-microvolt = <900000>;
+	clock-latency-ns = <70000>;
+};
