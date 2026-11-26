@@ -12,8 +12,10 @@
 #include <linux/clk-provider.h>
 #include <linux/iopoll.h>
 #include <linux/math.h>
+#include <linux/of.h>
 #include <linux/of_clk.h>
 #include <linux/platform_device.h>
+#include <linux/sizes.h>
 #include <linux/slab.h>
 
 #include "common.h"
@@ -29,6 +31,7 @@ struct eswin_clock_data *eswin_clk_init(struct platform_device *pdev,
 					size_t nr_clks)
 {
 	struct eswin_clock_data *eclk_data;
+	struct resource *res;
 
 	eclk_data = devm_kzalloc(&pdev->dev,
 				 struct_size(eclk_data, clk_data.hws, nr_clks),
@@ -36,9 +39,13 @@ struct eswin_clock_data *eswin_clk_init(struct platform_device *pdev,
 	if (!eclk_data)
 		return ERR_PTR(-ENOMEM);
 
-	eclk_data->base = devm_platform_ioremap_resource(pdev, 0);
+	eclk_data->base = devm_platform_get_and_ioremap_resource(pdev, 0, &res);
 	if (IS_ERR(eclk_data->base))
 		return ERR_CAST(eclk_data->base);
+
+	/* The die 1 register windows of EIC7702 sit 512 MiB above die 0. */
+	if (of_machine_is_compatible("eswin,eic7702"))
+		eclk_data->die = !!(res->start & SZ_512M);
 
 	eclk_data->clk_data.num = nr_clks;
 	spin_lock_init(&eclk_data->lock);
@@ -188,10 +195,15 @@ int eswin_clk_register_fixed_rate(struct device *dev,
 				  int nums, struct eswin_clock_data *data)
 {
 	struct clk_hw *clk_hw;
+	const char *name;
 	int i;
 
 	for (i = 0; i < nums; i++) {
-		clk_hw = devm_clk_hw_register_fixed_rate(dev, clks[i].name,
+		name = eswin_clk_name(dev, data, clks[i].name);
+		if (!name)
+			return -ENOMEM;
+
+		clk_hw = devm_clk_hw_register_fixed_rate(dev, name,
 							 NULL, clks[i].flags,
 							 clks[i].rate);
 		if (IS_ERR(clk_hw))
@@ -216,6 +228,7 @@ int eswin_clk_register_pll(struct device *dev, struct eswin_pll_clock *clks,
 	struct eswin_clk_pll *p_clk = NULL;
 	struct clk_init_data init = {};
 	struct clk_hw *clk_hw;
+	const char *name;
 	int i, ret;
 
 	p_clk = devm_kzalloc(dev, sizeof(*p_clk) * nums, GFP_KERNEL);
@@ -223,6 +236,10 @@ int eswin_clk_register_pll(struct device *dev, struct eswin_pll_clock *clks,
 		return -ENOMEM;
 
 	for (i = 0; i < nums; i++) {
+		name = eswin_clk_name(dev, data, clks[i].name);
+		if (!name)
+			return -ENOMEM;
+
 		p_clk->id = clks[i].id;
 		p_clk->ctrl_reg0 = data->base + clks[i].ctrl_reg0;
 		p_clk->fbdiv_shift = clks[i].fbdiv_shift;
@@ -239,7 +256,7 @@ int eswin_clk_register_pll(struct device *dev, struct eswin_pll_clock *clks,
 		p_clk->max_rate = clks[i].max_rate;
 		p_clk->min_rate = clks[i].min_rate;
 
-		init.name = clks[i].name;
+		init.name = name;
 		init.flags = 0;
 		init.parent_data = clks[i].parent_data;
 		init.num_parents = 1;
@@ -265,10 +282,15 @@ int eswin_clk_register_fixed_factor(struct device *dev,
 				    int nums, struct eswin_clock_data *data)
 {
 	struct clk_hw *clk_hw;
+	const char *name;
 	int i;
 
 	for (i = 0; i < nums; i++) {
-		clk_hw = devm_clk_hw_register_fixed_factor_index(dev, clks[i].name,
+		name = eswin_clk_name(dev, data, clks[i].name);
+		if (!name)
+			return -ENOMEM;
+
+		clk_hw = devm_clk_hw_register_fixed_factor_index(dev, name,
 								 clks[i].parent_data->index,
 								 clks[i].flags, clks[i].mult,
 								 clks[i].div);
@@ -289,6 +311,7 @@ static struct clk_hw *eswin_register_mux(struct device *dev,
 {
 	struct clk_parent_data parents[3] = {};
 	unsigned int num_clks = data->clk_data.num;
+	const char *name;
 
 	if (!mux->num_parents || mux->num_parents > ARRAY_SIZE(parents))
 		return ERR_PTR(-EINVAL);
@@ -309,7 +332,11 @@ static struct clk_hw *eswin_register_mux(struct device *dev,
 		}
 	}
 
-	return devm_clk_hw_register_mux_parent_data_table(dev, mux->name, parents,
+	name = eswin_clk_name(dev, data, mux->name);
+	if (!name)
+		return ERR_PTR(-ENOMEM);
+
+	return devm_clk_hw_register_mux_parent_data_table(dev, name, parents,
 			mux->num_parents, mux->flags, data->base + mux->reg,
 			mux->shift, mux->width, mux->mux_flags, mux->table,
 			&data->lock);
@@ -490,10 +517,15 @@ int eswin_clk_register_divider(struct device *dev,
 			       int nums, struct eswin_clock_data *data)
 {
 	struct clk_hw *clk_hw;
+	const char *name;
 	int i;
 
 	for (i = 0; i < nums; i++) {
-		clk_hw = devm_clk_hw_register_divider_parent_data(dev, clks[i].name,
+		name = eswin_clk_name(dev, data, clks[i].name);
+		if (!name)
+			return -ENOMEM;
+
+		clk_hw = devm_clk_hw_register_divider_parent_data(dev, name,
 								  clks[i].parent_data,
 								  clks[i].flags,
 								  data->base + clks[i].reg,
@@ -514,10 +546,15 @@ int eswin_clk_register_gate(struct device *dev, const struct eswin_gate_clock *c
 			    int nums, struct eswin_clock_data *data)
 {
 	struct clk_hw *clk_hw;
+	const char *name;
 	int i;
 
 	for (i = 0; i < nums; i++) {
-		clk_hw = devm_clk_hw_register_gate_parent_data(dev, clks[i].name,
+		name = eswin_clk_name(dev, data, clks[i].name);
+		if (!name)
+			return -ENOMEM;
+
+		clk_hw = devm_clk_hw_register_gate_parent_data(dev, name,
 							       clks[i].parent_data,
 							       clks[i].flags,
 							       data->base + clks[i].reg,
@@ -540,6 +577,7 @@ int eswin_clk_register_clks(struct device *dev, struct eswin_clk_info *clks,
 	struct eswin_clk_info *info;
 	const struct clk_hw *phw = NULL;
 	struct clk_hw *hw;
+	const char *name;
 	int i;
 
 	for (i = 0; i < nums; i++) {
@@ -550,7 +588,11 @@ int eswin_clk_register_clks(struct device *dev, struct eswin_clk_info *clks,
 
 			factor = &info->data.factor;
 			phw = data->clk_data.hws[info->pid];
-			hw = devm_clk_hw_register_fixed_factor_parent_hw(dev, factor->name, phw,
+			name = eswin_clk_name(dev, data, factor->name);
+			if (!name)
+				return -ENOMEM;
+
+			hw = devm_clk_hw_register_fixed_factor_parent_hw(dev, name, phw,
 									 factor->flags,
 									 factor->mult,
 									 factor->div);
@@ -562,14 +604,18 @@ int eswin_clk_register_clks(struct device *dev, struct eswin_clk_info *clks,
 		case CLK_DIVIDER: {
 			const struct eswin_divider_clock *div = &info->data.div;
 
+			name = eswin_clk_name(dev, data, div->name);
+			if (!name)
+				return -ENOMEM;
+
 			phw = data->clk_data.hws[info->pid];
 			if (div->priv_flag)
-				hw = eswin_register_clkdiv(dev, div->id, div->name, phw,
+				hw = eswin_register_clkdiv(dev, div->id, name, phw,
 							   div->flags, data->base + div->reg,
 							   div->shift, div->width, div->div_flags,
 							   div->priv_flag, &data->lock);
 			else
-				hw = devm_clk_hw_register_divider_parent_hw(dev, div->name, phw,
+				hw = devm_clk_hw_register_divider_parent_hw(dev, name, phw,
 									    div->flags,
 									    data->base + div->reg,
 									    div->shift, div->width,
@@ -580,8 +626,12 @@ int eswin_clk_register_clks(struct device *dev, struct eswin_clk_info *clks,
 		case CLK_GATE: {
 			const struct eswin_gate_clock *gate = &info->data.gate;
 
+			name = eswin_clk_name(dev, data, gate->name);
+			if (!name)
+				return -ENOMEM;
+
 			phw = data->clk_data.hws[info->pid];
-			hw = devm_clk_hw_register_gate_parent_hw(dev, gate->name, phw,
+			hw = devm_clk_hw_register_gate_parent_hw(dev, name, phw,
 								 gate->flags,
 								 data->base + gate->reg,
 								 gate->bit_idx, gate->gate_flags,
