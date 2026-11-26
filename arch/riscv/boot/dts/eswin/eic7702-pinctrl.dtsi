@@ -1,0 +1,176 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * ESWIN EIC7702 pin multiplexing
+ * Copyright (c) 2026 Beijing ESWIN Computing Technology Co., Ltd.
+ * Author: Yulin Lu <luyulin@eswincomputing.com>
+ */
+
+&d0_pinctrl {
+	default-pins-grp {
+		/omit-if-no-ref/
+		d0_fan_pwm_pins: fan-pwm-pins {
+			pins = "fan_pwm";
+			function = "pwm";
+		};
+
+		/omit-if-no-ref/
+		d0_fan_tach_pins: fan-tach-pins {
+			pins = "fan_tach";
+			function = "fan_tach";
+		};
+
+		/omit-if-no-ref/
+		d0_gpio6_pins: gpio6-pins {
+			pins = "spi2_cs0_n";
+			function = "gpio";
+		};
+
+		/omit-if-no-ref/
+		d0_gpio12_pins: gpio12-pins {
+			pins = "spi2_cs1_n";
+			function = "gpio";
+		};
+
+		/omit-if-no-ref/
+		d0_gpio18_pins: gpio18-pins {
+			pins = "i2s0_bclk";
+			function = "gpio";
+		};
+
+		/omit-if-no-ref/
+		d0_gpio29_pins: gpio29-pins {
+			pins = "gpio29";
+			function = "gpio";
+		};
+
+		/omit-if-no-ref/
+		d0_gpio34_pins: gpio34-pins {
+			pins = "gpio34";
+			function = "gpio";
+		};
+
+		/omit-if-no-ref/
+		d0_gpio39_pins: gpio39-pins {
+			pins = "spi1_d2";
+			function = "gpio";
+		};
+
+		/omit-if-no-ref/
+		d0_gpio40_pins: gpio40-pins {
+			pins = "spi1_d3";
+			function = "gpio";
+		};
+
+		/omit-if-no-ref/
+		d0_gpio41_pins: gpio41-pins {
+			pins = "spi1_cs1_n";
+			function = "gpio";
+		};
+
+		/omit-if-no-ref/
+		d0_gpio46_pins: gpio46-pins {
+			pins = "i2c1_scl";
+			function = "gpio";
+		};
+
+		/omit-if-no-ref/
+		d0_gpio47_pins: gpio47-pins {
+			pins = "i2c1_sda";
+			function = "gpio";
+		};
+
+		/omit-if-no-ref/
+		d0_gpio73_pins: gpio73-pins {
+			pins = "mipi_csi1_xvs";
+			function = "gpio";
+		};
+
+		/omit-if-no-ref/
+		d0_gpio74_pins: gpio74-pins {
+			pins = "mipi_csi1_xhs";
+			function = "gpio";
+		};
+
+		/omit-if-no-ref/
+		d0_gpio75_pins: gpio75-pins {
+			pins = "mipi_csi1_mclk";
+			function = "gpio";
+		};
+
+		/omit-if-no-ref/
+		d0_gpio81_pins: gpio81-pins {
+			pins = "mipi_csi3_mclk";
+			function = "gpio";
+		};
+
+		/omit-if-no-ref/
+		d0_gpio94_pins: gpio94-pins {
+			pins = "s_mode";
+			function = "gpio";
+		};
+
+		/omit-if-no-ref/
+		d0_gpio111_pins: gpio111-pins {
+			pins = "gpio111";
+			function = "gpio";
+		};
+
+		/omit-if-no-ref/
+		d0_uart3_pins: uart3-pins {
+			pins = "gpio92", "gpio93";
+			function = "uart";
+		};
+	};
+};
+
+&d1_pinctrl {
+	default-pins-grp {
+		/omit-if-no-ref/
+		d1_gpio18_pins: gpio18-pins {
+			pins = "i2s0_bclk";
+			function = "gpio";
+		};
+
+		/omit-if-no-ref/
+		d1_gpio21_pins: gpio21-pins {
+			pins = "i2s0_sdo";
+			function = "gpio";
+		};
+
+		/omit-if-no-ref/
+		d1_gpio29_pins: gpio29-pins {
+			pins = "gpio29";
+			function = "gpio";
+		};
+
+		/omit-if-no-ref/
+		d1_gpio34_pins: gpio34-pins {
+			pins = "gpio34";
+			function = "gpio";
+		};
+
+		/omit-if-no-ref/
+		d1_gpio36_pins: gpio36-pins {
+			pins = "spi1_clk";
+			function = "gpio";
+		};
+
+		/omit-if-no-ref/
+		d1_gpio39_pins: gpio39-pins {
+			pins = "spi1_d2";
+			function = "gpio";
+		};
+
+		/omit-if-no-ref/
+		d1_gpio92_pins: gpio92-pins {
+			pins = "gpio92";
+			function = "gpio";
+		};
+
+		/omit-if-no-ref/
+		d1_gpio93_pins: gpio93-pins {
+			pins = "gpio93";
+			function = "gpio";
+		};
+	};
+};
